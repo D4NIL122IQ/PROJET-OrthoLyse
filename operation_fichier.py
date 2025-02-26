@@ -77,14 +77,15 @@ def detect_silnce_inInterval(audio):
     #detection du silence
     # min_silence_len le temps minimale de silence 
     # silence_thresh le volume en db pour detecter le silence 
-    # la durée min du silence est a 500ms et on defini -40db comme le seuil du silence
-    
-    return detect_silence(audio, min_silence_len=500, silence_thresh=-40)
+    # la durée min du silence est a 900ms et on defini -40db comme le seuil du silence
+    # la durée du silence est a configurer par rapport aux tests a venir 
+    # plus la durée est longue plus on est sur que la coupure est plus correcte !!! mais et si il ne ya pas de silence aussi long dans tout l'audio ? 
+    return detect_silence(audio, min_silence_len=900, silence_thresh=-40)
 
     
 
 
-def split_file(file_path):
+def split_audio(file_path):
     """
     Decouper un fichier en plusieurs sous-fichiers de durée inferieurs a stocker dans le repertoir filleSpliter
     """
@@ -100,9 +101,14 @@ def split_file(file_path):
     start = 0
     file_number = 1
     while start < duration:
-        listSilence = detect_silnce_inInterval(audio[start+290000 : start+310000])
-        temp1, temp2 = listSilence[0]
-        stop = ((temp1+temp2)//2) - start
+        s1 = min(duration , start+290000) #debut de l'intarvale ou on charche le silence
+        s2 = min(duration , start+310000) #fin avec un intervale de 20 seconde
+        if(s1 == duration or s2 == duration):
+            stop = 0
+        else:
+            listSilence = detect_silnce_inInterval(audio[s1: s2])
+            temp1, temp2 = listSilence[0]
+            stop = ((temp1+temp2)//2)
         end = min(duration , start+290000+ stop) #on decoupe l'audio en morceau de 5min -> 300sec -> 30000ms
         segement = audio[start:end]
         #enregitrement dans le repertoir fileSpliter
@@ -118,4 +124,4 @@ def split_file(file_path):
 
 
 
-split_file("./fichierTeste/arte.mp3")
+split_audio("./fichierTeste/arte.mp3")
