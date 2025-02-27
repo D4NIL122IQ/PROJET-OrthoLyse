@@ -37,7 +37,7 @@ def file_size_sec(file_path):
     frmt = reel_file_format(file_path) 
     return ( len(AudioSegment.from_file(file_path , format=frmt)) / 1000)
 
-def extraction_audio_fmp4(file_pth):
+def extract_audio_fmp4(file_pth):
     """"
     Extration d'un audio d'un fichier mp4
     je prends l'intiative de faire cette extration car un fichier mp3 est moins lourd qu'un fichier mp4 
@@ -120,8 +120,4 @@ def split_audio(file_path):
         file_number +=1
     
     #on retourne le nbr de fichier pour pouvoir les parcourir afin de faire de la transcription
-    return file_number
-
-
-
-split_audio("./fichierTeste/arte.mp3")
+    return file_number, output_dir
