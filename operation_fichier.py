@@ -51,20 +51,6 @@ def extract_audio_fmp4(file_pth):
     audio.export(output_name, format="mp3")
     return  output_name
 
-
-#***** ---------------***
-# def split_file_size(file_path):
-#     """
-#     Separtion d'un fichier en plusieurs sous-fichiers de taille inferieurs
-#     """
-#     output_dir = os.path.join(os.getcwd(), "fileSpliter")
-#     print(output_dir)
-#     if not os.path.exists(output_dir):
-#         os.makedirs("fileSpliter")
-
-#     size = file_size_Mo(file_path)
-#     audio
-#***** ---------------***
 def detect_silnce_inInterval(audio):
     
     # on passe en parametre une segment dans les allentour ou on veut decouper l'audio
@@ -100,15 +86,24 @@ def split_audio(file_path):
     duration = file_size_ms(file_path)  
     start = 0
     file_number = 1
+
     while start < duration:
-        s1 = min(duration , start+290000) #debut de l'intarvale ou on charche le silence
-        s2 = min(duration , start+310000) #fin avec un intervale de 20 seconde
-        if(s1 == duration or s2 == duration):
-            stop = 0
-        else:
-            listSilence = detect_silnce_inInterval(audio[s1: s2])
-            temp1, temp2 = listSilence[0]
-            stop = ((temp1+temp2)//2)
+        t1 = 290000 # init
+        t2 = 310000 # init
+        
+        listSilence = []
+        while(not listSilence):
+            s1 = min(duration , start+t1) #debut de l'intarvalle ou on charche le silence
+            s2 = min(duration , start+t2) #fin avec un intervalle de 20 seconde
+            if(s1 == duration or s2 == duration): #si on atteint la fin de l'audio on a plus besoin de decouper on recupere juste la derniere partie 
+                stop = 0
+                break #puisque on est dans cette patie la listSilence =[] ==> TRUE ce qui provoque une boucle infini 
+            else:
+                listSilence = detect_silnce_inInterval(audio[s1: s2]) 
+                temp1, temp2 = listSilence[0] #on recupere le premier moment de silence qui existe dans l'intervale [s1,S2]
+                stop = ((temp1+temp2)//2) #on coup au millieu du silence 
+                t2 += 10000 # si dans l'intervalle ou on cherche a decouper y a pas un moment de silence on augmente cette intervalle de 10sec
+
         end = min(duration , start+290000+ stop) #on decoupe l'audio en morceau de 5min -> 300sec -> 30000ms
         segement = audio[start:end]
         #enregitrement dans le repertoir fileSpliter
