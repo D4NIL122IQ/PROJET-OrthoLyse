@@ -68,8 +68,6 @@ def detect_silnce_inInterval(audio):
     # plus la durée est longue plus on est sur que la coupure est plus correcte !!! mais et si il ne ya pas de silence aussi long dans tout l'audio ? 
     return detect_silence(audio, min_silence_len=900, silence_thresh=-40)
 
-    
-
 
 def split_audio(file_path):
     """
@@ -85,7 +83,7 @@ def split_audio(file_path):
     
     duration = file_size_ms(file_path)  
     start = 0
-    file_number = 1
+    file_number = 0
 
     while start < duration:
         t1 = 290000 # init
@@ -93,6 +91,7 @@ def split_audio(file_path):
         
         listSilence = []
         while(not listSilence):
+            file_number +=1
             s1 = min(duration , start+t1) #debut de l'intarvalle ou on charche le silence
             s2 = min(duration , start+t2) #fin avec un intervalle de 20 seconde
             if(s1 == duration or s2 == duration): #si on atteint la fin de l'audio on a plus besoin de decouper on recupere juste la derniere partie 
@@ -111,8 +110,6 @@ def split_audio(file_path):
         print(file_dir)
         segement.export(file_dir, format=reel_file_format(file_path))
         start = end #actualiser le debut pour la prochaine decoupe || fin de decoup 
-                    # note a danil et si on ajoute 1ms pour que ze3ma ca fait 0-1000ms puis 1001ms-2001ms a tester
-        file_number +=1
-    
+        
     #on retourne le nbr de fichier pour pouvoir les parcourir afin de faire de la transcription
     return file_number, output_dir
