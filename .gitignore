@@ -11,5 +11,6 @@
 /.DS_Store
 
 #fichier test
-/creation.py 
+/creation.py
+/*.json 
 
