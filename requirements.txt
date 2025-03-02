@@ -14,9 +14,13 @@ numba==0.61.0
 numpy==1.26.4
 openai-whisper==20240930
 pydub==0.25.1
+PySide6==6.8.2.1
+PySide6_Addons==6.8.2.1
+PySide6_Essentials==6.8.2.1
 python-magic==0.4.27
 regex==2024.11.6
 requests==2.32.3
+shiboken6==6.8.2.1
 sympy==1.13.3
 tiktoken==0.9.0
 torch==2.2.2
