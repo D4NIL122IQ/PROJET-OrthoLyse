@@ -1,6 +1,7 @@
 import whisper
 import os
 import shutil
+import torch
 from operation_fichier import extract_audio_fmp4
 from operation_fichier import file_size_Mo, file_size_sec
 from operation_fichier import reel_file_format
@@ -20,6 +21,7 @@ def transcription(file_path , mdl):
     fileNb = 0
     outDir = ""
     temp_file_name = ""
+    dc ="cpu" #pour utiliser le cpu comme device 
 
     #on verifie si le fichier est au format mp4 c'est le cas on extrait l'audio pour alleger le fichier
     if(reel_file_format(file_path) == "mp4"):
@@ -33,10 +35,16 @@ def transcription(file_path , mdl):
     if(file_size_Mo(file_path) > 25  or file_size_sec(file_path) > 600):
         fileNb, outDir = split_audio(file_path)
         useSplit = True
+    
+    if(torch.cuda.is_available()): #verifier si l'utilisatuer possede un gpu compatible nvidia
+        dc ="cuda" 
+
+    if(torch.backends.mps.is_available()): #verifier si l'utilisateur possede un gpu compatible apple >=m1
+        dc = "mps"
 
     # on charge le modele whisper demander par l'utilisateur au par avant
-    modele = whisper.load_model(modele_dispo[mdl])
-    
+    modele = whisper.load_model(modele_dispo[mdl] , device=dc)
+
     #deux cas de transcritption 
     #1- on a diviser le fichier originel >> on fait la transcription de chaque fichier disponible dans le dossier
     #2- le fichier n'a pas subit n'a pas etait diviser >> on procede directement a la transcription
