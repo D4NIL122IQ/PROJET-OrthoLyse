@@ -1,5 +1,6 @@
 /projet-env
 /fichierTeste
+/*/__pycache__
 /__pycache__
 /fileSpliter
 /test.py
@@ -13,5 +14,6 @@
 #fichier test
 /creation.py
 /*.json 
+/.idea
 /frontend
 
