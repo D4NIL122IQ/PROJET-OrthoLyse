@@ -58,4 +58,4 @@ def transcription(file_path , mdl):
             os.remove(file_path)
             file_path = temp_file_name
     
-print(list(transcription("./fichierTeste/3.mp3",0)))
+print(list(transcription("/Users/danil/Documents/PROJET-OrthoLyse/fichierTeste/3.mp3",0)))
