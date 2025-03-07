@@ -12,7 +12,7 @@
 /.DS_Store
 
 #fichier test
-/creation.py
+/*.py
 /*.json 
 /.idea
 /frontend
