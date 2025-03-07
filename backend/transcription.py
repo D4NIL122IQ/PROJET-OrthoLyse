@@ -51,7 +51,7 @@ def transcription(file_path , mdl):
     if(useSplit):
         i = 1 #cette indice defiit le numero du fichier a transcrire
         while(i<= fileNb):
-            temp_file_path = os.path.join(outDir,f'{i}.mp3')
+            temp_file_path = os.path.join(os.path.abspath(outDir),f'{i}.mp3')
             transpt = modele.transcribe(temp_file_path)
             yield transpt['text']
             i+=1 
@@ -66,4 +66,4 @@ def transcription(file_path , mdl):
             os.remove(file_path)
             file_path = temp_file_name
     
-print(list(transcription("/Users/danil/Documents/PROJET-OrthoLyse/fichierTeste/3.mp3",0)))
+print(list(transcription("/Users/danil/Documents/PROJET-OrthoLyse/fichierTeste/arte.mp3",0)))
