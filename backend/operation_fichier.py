@@ -1,30 +1,18 @@
 import os
-import magic
 from pydub import AudioSegment
-from pydub.silence import detect_nonsilent, detect_silence
-
+from pydub.silence import detect_silence
+from pathlib import Path
 
 def file_size_Mo(file_path):
     #getsize retourne la taille en octect 
     # 1Mo = 2^20 octet 
     return os.path.getsize(file_path) / pow(2, 20)
 
-
-
 def reel_file_format(file_path):
     """"
     Retourne le vrai format d'un fichier
     """
-    file_format = magic.Magic(mime=True).from_file(file_path)
-    mime_to_format = {
-        "audio/mpeg": "mp3",
-        "audio/x-wav": "wav",
-        "audio/wav": "wav",
-        "audio/flac": "flac",
-        "audio/ogg": "ogg",
-        "video/mp4": "mp4",
-    }
-    return mime_to_format[file_format]
+    return Path(file_path).suffix.lstrip(".")
 
 
 def file_size_ms(file_path):
@@ -107,7 +95,6 @@ def split_audio(file_path):
         segement = audio[start:end]
         #enregitrement dans le repertoir fileSpliter
         file_dir = os.path.join(output_dir,f'{file_number}.mp3')
-        print(file_dir)
         segement.export(file_dir, format=reel_file_format(file_path))
         start = end #actualiser le debut pour la prochaine decoupe || fin de decoup 
         
