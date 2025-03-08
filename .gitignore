@@ -9,11 +9,10 @@
 /*/*.mp4
 /*.mp4
 /*.mp3
-/.DS_Store
+.DS_Store
 
 #fichier test
 /*.py
 /*.json 
 /.idea
-/frontend
 
