@@ -2,10 +2,10 @@ import whisper
 import os
 import shutil
 import torch
-from operation_fichier import extract_audio_fmp4
-from operation_fichier import file_size_Mo, file_size_sec
-from operation_fichier import reel_file_format
-from operation_fichier import split_audio
+from backend.operation_fichier import extract_audio_fmp4
+from backend.operation_fichier import file_size_Mo, file_size_sec
+from backend.operation_fichier import reel_file_format
+from backend.operation_fichier import split_audio
 
 modele_dispo = ["base", "small" , "medium" , "turbo"]
 
@@ -66,4 +66,4 @@ def transcription(file_path , mdl):
             os.remove(file_path)
             file_path = temp_file_name
     
-print(list(transcription("/Users/danil/Documents/PROJET-OrthoLyse/fichierTeste/arte.mp3",0)))
+#print(list(transcription("/Users/danil/Documents/PROJET-OrthoLyse/fichierTeste/arte.mp3",0)))
