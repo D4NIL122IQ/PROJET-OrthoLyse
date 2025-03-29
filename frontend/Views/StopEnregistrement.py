@@ -19,6 +19,7 @@ class StopEnregistrement(Prenregistrement):
     def __init__(self):
         super().__init__()  # utilisation du constructeur du parent sans modification
 
+
     def container(self):
         self.box = QWidget(self)
         self.box.setMinimumSize(520, round(520 * 0.68))
@@ -41,7 +42,7 @@ class StopEnregistrement(Prenregistrement):
             {
                 "svg": "./assets/SVG/lunchT.svg",
                     "size": 32,
-                    "action": None,
+                    "action": self.go_transcribe,
                     "label": "Transcrire",
             }
         ]
@@ -59,4 +60,8 @@ class StopEnregistrement(Prenregistrement):
 
     def lunch_principal(self):
         self.controller.change_page("Prenregistrer")
+
+    def go_transcribe(self):
+        self.controller.set_file_transcription_path(self.audio_filename)
+        self.controller.change_page("Transcription")
 

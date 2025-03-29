@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
 )
+import os
 
 from frontend.controllers.Menu_controllers import NavigationController
 
@@ -16,7 +17,9 @@ from frontend.controllers.Menu_controllers import NavigationController
 class Prenregistrement(QWidget):
     def __init__(self):
         super().__init__()
+        self.audio_filename = os.path.join(os.getcwd(), "enregistrement_audio.wav")
         self.controller = NavigationController()
+
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.font, self.font_family = self.controller.set_font(
             "./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf"
@@ -32,33 +35,6 @@ class Prenregistrement(QWidget):
         self.br()
         self.container()
         self.layout.addStretch()
-
-        #self.reload_page()  # Charger la page dès l'initialisation
-
-    def showEvent(self, event):
-        """Réinitialise la page à chaque affichage"""
-        # self.reload_page()
-        super().showEvent(event)
-
-    def reload_page(self):
-        """Test simplifié de la page pour comprendre le problème"""
-
-        # Réinitialiser complètement le layout
-        while self.layout.count():
-            item = self.layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-
-        # Ajouter de nouveaux widgets
-        self.head()
-        self.br()
-        self.container()
-
-        # Ajouter un stretch unique pour voir l'effet
-        self.layout.addStretch(3)
-
-        self.update()
-        self.repaint()
 
     def head(self):
         self.bar = QWidget(self)
@@ -181,10 +157,7 @@ class Prenregistrement(QWidget):
         btn.setIcon(icon_mic)
         btn.setIconSize(QSize(size, size))
         btn.setStyleSheet(
-            "border: 1px solid grey;"
-            "border-radius: 20px; "
-            "background-color: transparent; "
-            "color:black;"
+            "border: 1px solid grey; border-radius: 20px; background-color: transparent; color:black;"
         )
         btn.setFixedSize(40, 40)
         btn.setCursor(Qt.PointingHandCursor)
@@ -208,15 +181,16 @@ class Prenregistrement(QWidget):
         return label
 
     def page_mode(self):
-        self.statutContainer = "before"
         self.controller.change_page("ModeDeChargement")
 
     def page_home(self):
         self.controller.change_page("Home")
 
+    def lunch_principal(self):
+        self.controller.change_page("Prenregistrer")
+
     def lunch_enregistrement(self):
         self.controller.change_page("Enregistrer")
 
     def stop_enregistrement(self):
-        print("hip changement")
         self.controller.change_page("StopEnregistrer")

@@ -10,14 +10,20 @@ from PySide6.QtWidgets import (
     QPushButton,
 )
 from frontend.Views.Prenregistrement import Prenregistrement
-from frontend.controllers.Menu_controllers import NavigationController
-
+from frontend.controllers.Record_controllers import RecordeController
 
 # classe mere des deux autres classes enregistrement et ecoute
 
 class Enregistrement(Prenregistrement):
     def __init__(self):
         super().__init__() # utilisation du constructeur du parent sans modification
+        self.recController = RecordeController(self.audio_filename)
+
+
+    def showEvent(self, event):
+        """ Cet event permet de lancer l'enregistrement une fois la page charger"""
+        super().showEvent(event)
+        self.recController.start_recording()
 
     def container(self):
         self.box = QWidget(self)
@@ -41,7 +47,7 @@ class Enregistrement(Prenregistrement):
             {
                 "svg": "./assets/SVG/stopMic.svg",
                 "size": 24,
-                "action": super().stop_enregistrement,
+                "action": self.stop_enregistrement,
                 "label": "stop",
             }
         ]
@@ -58,6 +64,11 @@ class Enregistrement(Prenregistrement):
 
         self.layout.addWidget(self.box)
 
-
     def lunch_principal(self):
+        self.recController.stop_recording(sv=False)
         self.controller.change_page("Prenregistrer")
+
+    def stop_enregistrement(self):
+        self.recController.stop_recording()
+        self.controller.change_page("StopEnregistrer")
+
