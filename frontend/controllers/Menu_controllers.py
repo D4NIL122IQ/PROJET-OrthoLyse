@@ -64,6 +64,8 @@ class NavigationController:
                 self.central_widget.setCurrentWidget(self.main_window.enregistrer)
             elif page_name == "StopEnregistrer":
                 self.central_widget.setCurrentWidget(self.main_window.stopenregistrer)
+            elif page_name == 'Metrique':
+                self.central_widget.setCurrentWidget(self.main_window.metrique)
             elif page_name == "Transcription":
 
                 if self.get_text_transcription() is None:

@@ -30,6 +30,7 @@ from frontend.Views.HelpTranscription import HelpTranscription
 from frontend.Views.Prenregistrement import Prenregistrement
 from frontend.Views.Enregistrement import Enregistrement
 from frontend.Views.StopEnregistrement import StopEnregistrement
+from frontend.Views.Metrique import Metrique
 from frontend.controllers.Menu_controllers import NavigationController
 
 
@@ -93,6 +94,10 @@ class MyWindow(QMainWindow):
         self.stopenregistrer = StopEnregistrement()
         self.qStackwidget.addWidget(self.stopenregistrer)
 
+        # metrique
+        self.metrique = Metrique()
+        self.qStackwidget.addWidget(self.metrique)
+
         # CrÃ©er un QLabel pour afficher l'image de fond
         self.label_fond = QLabel(self)
         self.label_fond.setAlignment(Qt.AlignCenter)
@@ -154,6 +159,10 @@ class MyWindow(QMainWindow):
         action_enregistrer.triggered.connect(self.show_enregistrer)
         self.toolbar.addAction(action_enregistrer)
 
+        action_metrique = QAction("metrique", self)
+        action_metrique.triggered.connect(self.show_metrique)
+        self.toolbar.addAction(action_metrique)
+
         self.controller = NavigationController()
         self.controller.set_main_window(self, self.qStackwidget)
 
@@ -180,7 +189,7 @@ class MyWindow(QMainWindow):
 
     def show_enregistrer(self):
         """Afficher le menu d'enregistrement"""
-        self.qStackwidget.setCurrentWidget(self.enregistrer)
+        self.qStackwidget.setCurrentWidget(self.prenregistrer)
 
     def show_trans(self):
         """Afficher la page de transcription"""
@@ -190,6 +199,9 @@ class MyWindow(QMainWindow):
         """Afficher la page de correction de la transcription"""
         self.qStackwidget.setCurrentWidget(self.correction_transcription)
 
+    def show_metrique(self):
+        """ Afficher les metrique"""
+        self.qStackwidget.setCurrentWidget(self.metrique)
     def ajuster_image(self):
         # Redimensionner l'image pour s'adapter Ã  la fenÃªtre
         pixmap_redimensionne = self.pixmap.scaled(

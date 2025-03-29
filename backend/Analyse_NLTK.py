@@ -185,7 +185,7 @@ Sa curiosité prit le dessus. Elle poussa doucement la porte – creeeeeek. À l
 """
 phrase = "re-développement  2,5 25 rapidement des entreprises innovantes trottiner"
 
-print(Analyse_NLTK(phrase).word_size())
+#print(Analyse_NLTK(phrase).word_size())
 
 
 # # dictionair des prefixe
