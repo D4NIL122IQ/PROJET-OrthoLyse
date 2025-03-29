@@ -10,9 +10,11 @@
 /*.mp4
 /*.mp3
 .DS_Store
-
+/*.wav
+/*/*.wav
 #fichier test
 /*.py
 /*.json 
 /.idea
+
 
