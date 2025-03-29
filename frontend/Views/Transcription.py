@@ -1,33 +1,31 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QLabel
-
+import json
 from backend.transcription import transcription
 from frontend.Widgets.AudioPlayer import AudioPlayer
 from frontend.Widgets.Feuille import Feuille
 
 
 class Transcription(QWidget):
-    def __init__(self):
+    def __init__(self,text,mapping_data,path=None):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         from frontend.controllers.Menu_controllers import NavigationController
 
         self.controller = NavigationController()
-        self.ui()
+        self.ui(text,mapping_data,path)
 
-    def ui(self):
+    def ui(self,text,mapping_data,path=None):
 
-        self.path = self.controller.get_file_transcription_path()
-        if self.controller.get_text_transcription() is None:
-            self.text = list(transcription(self.path, 0))[0]
-            self.controller.set_text_transcription(self.text)
-        else:
-            print(("valider"))
-            self.text = self.controller.get_text_transcription()
+        self.path =path
+        self.text=text
+        self.mapping_data=mapping_data
 
         self.layout = QHBoxLayout(self)
         self.layout.setAlignment(Qt.AlignCenter)
         self.audio_player = AudioPlayer(self.path)
+        self.audio_player.position_en_secondes.connect(self.on_position_changed)
+
         self.feuille = Feuille("./assets/SVG/icone_file_text.svg", "Transcription", "Transcrire", "Coriger",
                                "rgba(245, 245, 245, 0.85)", self.text)
         self.feuille.setObjectName("feuille")
@@ -37,6 +35,14 @@ class Transcription(QWidget):
         self.layout.addWidget(self.feuille)
 
         self.setLayout(self.layout)
+
+    def on_position_changed(self, current_time_s):
+        """
+        Slot: appelé par le signal du AudioPlayer.
+        On surligne le segment du texte correspondant à current_time_s (secondes).
+        """
+        self.feuille.mettre_a_jour_surlignage(current_time_s, self.mapping_data)
+
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

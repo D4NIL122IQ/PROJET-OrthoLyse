@@ -1,7 +1,7 @@
 import os
 import sys
 
-from PySide6.QtCore import QUrl, Qt
+from PySide6.QtCore import QUrl, Qt, Signal
 from PySide6.QtGui import QFontDatabase, QFont, QIcon
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PySide6.QtWidgets import (
@@ -12,6 +12,9 @@ from frontend.Widgets.HoverSlider import HoverSlider
 
 
 class AudioPlayer(QWidget):
+
+    position_en_secondes = Signal(float)
+
     def __init__(self,path=None):
         super().__init__()
         self.path=path
@@ -59,11 +62,14 @@ class AudioPlayer(QWidget):
             self.slider.blockSignals(True)
             self.slider.setValue(int(position / self.duration * 100))
             self.slider.blockSignals(False)
+
+        self.position_en_secondes.emit(position / 1000)
         mm, ss = divmod(position // 1000, 60)
         self.left_time_label.setText(f"{mm:02d}:{ss:02d}")
 
     def update_duration(self, dur):
         self.duration = dur
+
         mm, ss = divmod(dur // 1000, 60)
         self.right_time_label.setText(f"{mm:02d}:{ss:02d}")
 
@@ -79,6 +85,12 @@ class AudioPlayer(QWidget):
 
     def set_playback_speed(self, speed):
         self.player.setPlaybackRate(speed)
+
+    def get_current_position(self):
+        """
+        Retourne la position actuelle du fichier audio en secondes.
+        """
+        return self.player.position() / 1000.0
 
     def set_font(self, font_path):
         font_id = QFontDatabase.addApplicationFont(font_path)

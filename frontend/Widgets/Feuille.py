@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QSlider, QPushButton, QSizePolicy, QLabel, QMenu, QPlainTextEdit, QGraphicsBlurEffect
 )
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QFont, QPalette, QColor, QPixmap
+from PySide6.QtGui import QIcon, QFont, QPalette, QColor, QPixmap, QTextCursor, QBrush
 
 
 class Feuille(QWidget):
@@ -74,8 +74,11 @@ class Feuille(QWidget):
             self.text_edit = QPlainTextEdit(self.controller.get_text_transcription())
         else:
             self.text_edit = QPlainTextEdit("")
-
-
+        self.old_text = self.text_edit.toPlainText()
+        self.text_edit.textChanged.connect(lambda: (self.controller.change_text(
+            self.text_edit.toPlainText()),
+            self.on_text_changed())
+        )
         self.text_edit.setReadOnly(True)
         self.text_edit.setFont(QFont(self.font_family,10))
 
@@ -83,15 +86,26 @@ class Feuille(QWidget):
                                      "padding-top: 5px;padding-bottom: 5px;padding-left: 10px;padding-right: 10px;")
         self.main_layout.addWidget(self.text_edit)
 
+    def on_text_changed(self):
+        """
+        Cette fonction est appelée chaque fois que le texte dans le QPlainTextEdit change.
+        Elle met à jour le surlignage après chaque modification du texte.
+        """
+        current_text = self.text_edit.toPlainText()
+        if current_text != self.plain_text:
+            self.plain_text = current_text
+            # Recalculer le surlignage chaque fois que le texte change
+            self.mettre_a_jour_surlignage(self.parentWidget().audio_player.get_current_position(), self.controller.get_mapping_data())
+
     def bottom(self):
         self.right_boutton=self.boutton(self.widget,self.right_butto_text,"#15B5D4","#15B5D4","#FFFFFF")
         self.left_boutton=self.boutton( self.widget,self.left_button_text,"#FFFFFF","#15B5D4","#15B5D4")
 
         if self.right_butto_text=="Coriger":
             self.right_boutton.clicked.connect(lambda :self.controller.change_page("CTanscription"))
-        elif self.right_butto_text=="Transcrire":
+        elif self.right_butto_text=="Annuler":
+            self.controller.set_text_transcription(self.old_text)
             self.right_boutton.clicked.connect(lambda :self.controller.change_page("Transcription"))
-
         if self.left_button_text=="Valider":
             self.controller.set_text_transcription(self.text_edit.toPlainText())
             self.left_boutton.clicked.connect(
@@ -138,6 +152,50 @@ class Feuille(QWidget):
         layout.setSpacing(0)
 
         return boutton_init
+
+    def mettre_a_jour_surlignage(self, current_time, mapping_data):
+        """
+        Surligne dans self.plain_text le segment correspondant au temps current_time (en secondes).
+        mapping_data : liste de tuples (start_time, end_time, start_idx, end_idx)
+        """
+        texte_complet = self.text_edit.toPlainText()
+
+        # Si le texte est vide ou si aucune donnée de mappage n'est fournie, on ne fait rien.
+        if not texte_complet or not mapping_data:
+            return
+
+        # Repérage du segment actif
+        segment_actif = None
+        for (start_t, end_t, start_idx, end_idx) in mapping_data:
+            if start_t <= current_time < end_t:
+                segment_actif = (start_idx, end_idx)
+                break
+
+        # Si aucun segment actif n'est trouvé, on arrête la fonction.
+        if not segment_actif:
+            return
+
+        # 1) On efface tout surlignage existant
+        cursor = self.text_edit.textCursor()
+        cursor.setPosition(0)  # Déplacer le curseur au début
+        cursor.setPosition(len(texte_complet), QTextCursor.KeepAnchor)  # Sélectionner tout le texte
+        format_clear = cursor.charFormat()
+        format_clear.setBackground(QBrush(Qt.transparent))  # Enlever tout surlignage
+        cursor.setCharFormat(format_clear)
+
+        # 2) On applique le surlignage sur le segment actif
+        start_idx, end_idx = segment_actif
+
+        # Vérifier que les indices sont valides
+        if start_idx < 0 or end_idx > len(texte_complet) or start_idx >= end_idx:
+            return  # On ne fait rien si les indices ne sont pas valides
+
+        cursor.setPosition(start_idx)
+        cursor.setPosition(end_idx, QTextCursor.KeepAnchor)  # Sélectionner la zone du segment
+
+        highlight_format = cursor.charFormat()
+        highlight_format.setBackground(QBrush(QColor("yellow")))  # Surligner en jaune
+        cursor.setCharFormat(highlight_format)
 
 
 text="""l'anis

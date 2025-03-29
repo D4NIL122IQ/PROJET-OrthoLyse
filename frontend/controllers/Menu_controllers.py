@@ -3,6 +3,7 @@ import sys
 
 from PySide6.QtGui import QFontDatabase, QFont
 
+from backend.transcription import ajuster_mapping, transcription,custom_tokenize
 from frontend.Views.CorrectionTranscription import CorrectionTranscription
 from frontend.Views.Transcription import Transcription
 
@@ -63,10 +64,13 @@ class NavigationController:
                 self.central_widget.setCurrentWidget(self.main_window.enregistrer)
             elif page_name == "StopEnregistrer":
                 self.central_widget.setCurrentWidget(self.main_window.stopenregistrer)
-            elif page_name == "Htrans":
-                self.central_widget.setCurrentWidget(self.main_window.help)
             elif page_name == "Transcription":
 
+                if self.get_text_transcription() is None:
+                    result = transcription(self.file_transcription_path, 0)
+                    self.set_text_transcription(result["text"])
+                    self.set_mapping_data(result["mapping"])
+                    self.set_first_mapping(result["mapping"])
                 # Vérifier si la page existe déjà
                 if (
                     hasattr(self.main_window, "transcription")
@@ -79,7 +83,7 @@ class NavigationController:
                     self.main_window.transcription.deleteLater()  # Libérer la mémoire
 
                 # Créer une nouvelle instance
-                self.main_window.transcription = Transcription()
+                self.main_window.transcription = Transcription(self.text_transcription,self.mapping_data,self.file_transcription_path)
                 self.main_window.qStackwidget.addWidget(self.main_window.transcription)
                 self.central_widget.setCurrentWidget(self.main_window.transcription)
 
@@ -96,7 +100,7 @@ class NavigationController:
                     self.main_window.correction_tanscription.deleteLater()  # Libérer la mémoire
 
                 # Créer une nouvelle instance
-                self.main_window.correction_tanscription = CorrectionTranscription()
+                self.main_window.correction_tanscription = CorrectionTranscription(self.text_transcription,self.mapping_data,self.file_transcription_path)
                 self.main_window.qStackwidget.addWidget(
                     self.main_window.correction_tanscription
                 )
@@ -113,6 +117,12 @@ class NavigationController:
     def set_text_transcription(self, text):
         self.text_transcription = text
 
+    def set_mapping_data(self, data):
+        self.mapping_data = data
+
+    def get_mapping_data(self):
+        return self.mapping_data
+
     def get_text_transcription(self):
         return self.text_transcription
 
@@ -124,7 +134,20 @@ class NavigationController:
             sys.exit(1)
         else:
             font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-            font = QFont(font_family, 14)  # 14 = Taille de la police
+            font = QFont(font_family, 12)  # 14 = Taille de la police par defaut
 
         return font, font_family
         # Ajouter d'autres conditions pour d'autres pages si nÃ©cessaire
+
+    def change_text(self,text):
+        if (text != self.text_transcription):
+            if (len(self.first_mapping_data) == len(custom_tokenize(text))):
+                self.mapping_data =ajuster_mapping(self.text_transcription,text,self.first_mapping_data)
+            else:
+
+                self.mapping_data =ajuster_mapping(self.text_transcription,text,self.mapping_data)
+            self.set_text_transcription(text)
+
+    def set_first_mapping(self,mapping):
+        self.first_mapping_data = mapping
+
