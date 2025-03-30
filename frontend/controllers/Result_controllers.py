@@ -9,24 +9,27 @@ class ResultController:
 
     def get_lemme(self):
         """Cette methode permet de renvoyer le nombre de lemme"""
-        pass
+        return 0
 
     def get_word(self):
         """Cette methode permet de renvoyer le nombre de mot """
-        return self.resultat.word_size()
+        return 0
+        #return self.resultat.word_size()
 
     def get_dif_word(self):
         """Cette methode permet de renvoyer le nombre de mot different"""
-        return self.resultat.nbr_unique_word()
+        return 0
+        #return self.resultat.nbr_unique_word()
 
     def get_morpheme(self):
         """Cette methode permet de renvoyer le nombre de morpheme"""
-        pass
+        return 0
 
     def get_enonce(self):
         """Cette methode permet de renvoyer le nombre d'enonce"""
-        return self.resultat.sent_size()
+        return 0
+        #return self.resultat.sent_size()
 
     def get_morpheme_enonce(self):
         """Cette methode permet de renvoyer le nombre de morpheme dans chaque enonces"""
-        pass
+        return 0
