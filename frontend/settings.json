@@ -1,0 +1,13 @@
+{
+  "modelWhisper" : 0,
+  "path_save_audio": "",
+  "ratio_metrique" : {
+    "lemme" : 0,
+    "nbrMotMin" : 0,
+    "nbrEnonceMin" : 0,
+    "morpheme" : 0,
+    "morphemeEnonce" : 0,
+    "motDifMin" : 0
+  },
+  "formatExport" : "pdf"
+}
