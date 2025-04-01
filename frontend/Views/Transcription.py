@@ -26,7 +26,7 @@ class Transcription(QWidget):
         self.audio_player = AudioPlayer(self.path)
         self.audio_player.position_en_secondes.connect(self.on_position_changed)
 
-        self.feuille = Feuille("./assets/SVG/icone_file_text.svg", "Transcription", "Transcrire", "Coriger",
+        self.feuille = Feuille("./assets/SVG/icone_file_text.svg", "Transcription", "Analyser", "Coriger",
                                "rgba(245, 245, 245, 0.85)", self.text)
         self.feuille.setObjectName("feuille")
         # self.feuille.setStyleSheet('QWidget#feuille{background-color: white; border-radius: 20px;border: 1px solid black}')

@@ -111,6 +111,8 @@ class Feuille(QWidget):
             self.left_boutton.clicked.connect(
                 lambda: (self.controller.set_text_transcription(self.text_edit.toPlainText()),
                          self.controller.change_page("Transcription")))
+        if self.left_button_text == "Analyser":
+            self.left_boutton.clicked.connect(lambda : self.controller.change_page("Metrique"))
 
         label_layout = QHBoxLayout()
         label_layout.addStretch(1)
