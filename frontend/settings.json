@@ -1,5 +1,6 @@
 {
   "modelWhisper" : 0,
+  "is_micro_activate" : false,
   "path_save_audio": "",
   "ratio_metrique" : {
     "lemme" : 0,
