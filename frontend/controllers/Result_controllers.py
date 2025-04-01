@@ -13,23 +13,23 @@ class ResultController:
 
     def get_word(self):
         """Cette methode permet de renvoyer le nombre de mot """
-        return 0
+        return 10
         #return self.resultat.word_size()
 
     def get_dif_word(self):
         """Cette methode permet de renvoyer le nombre de mot different"""
-        return 0
+        return 30
         #return self.resultat.nbr_unique_word()
 
     def get_morpheme(self):
         """Cette methode permet de renvoyer le nombre de morpheme"""
-        return 0
+        return 40
 
     def get_enonce(self):
         """Cette methode permet de renvoyer le nombre d'enonce"""
-        return 0
+        return 60
         #return self.resultat.sent_size()
 
     def get_morpheme_enonce(self):
         """Cette methode permet de renvoyer le nombre de morpheme dans chaque enonces"""
-        return 0
+        return 100
