@@ -4,6 +4,8 @@ import wave
 import sounddevice as sd
 
 
+# !!!!!! pour l'instant j'ai pas fait les pop up pour activer le micro et autres --> pour activer le micro faut le faire manuellement
+
 class Memo:
     """
     Cette classe permet de faire un enregistrement audio.
@@ -87,7 +89,7 @@ class Memo:
         print("PyAudio terminé")
 
         if not self.frames:
-            print("❌ Erreur : aucune donnée enregistrée !")
+            print(" Erreur : aucune donnée enregistrée !")
             return
 
         #j'utilise save dans ce cas pour qu'on eregistre pas l'audio si on fait un retour a l'accueil
