@@ -2,26 +2,6 @@ import whisper
 import os
 import shutil
 import torch
-from backend.operation_fichier import extract_audio_fmp4, file_size_Mo, file_size_sec, reel_file_format, split_audio
-
-import whisper
-import os
-import shutil
-import torch
-import json
-from backend.operation_fichier import (
-    extract_audio_fmp4,
-    file_size_Mo,
-    file_size_sec,
-    reel_file_format,
-    split_audio
-)
-
-modele_dispo = ["base", "small", "medium", "turbo"]
-import whisper
-import os
-import shutil
-import torch
 import json
 from backend.operation_fichier import (
     extract_audio_fmp4,
@@ -216,9 +196,12 @@ def ajuster_mapping(ancien_text, nouveau_text, ancien_mapping):
 
     return new_mapping
 
+def get_model():
+    with open(os.path.abspath("./settings.json"), 'r', encoding='utf-8') as fichier:
+        settings = json.load(fichier)
+    return settings["modelWhisper"]
 
-
-def transcription(file_path, mdl):
+def transcription(file_path, ):
     """
     Fonction qui retourne un dictionnaire avec le texte complet et le mapping des mots,
     avec les timestamps au niveau des mots.
@@ -256,7 +239,7 @@ def transcription(file_path, mdl):
         dc = "mps"
 
     # Charger le modèle Whisper demandé par l'utilisateur
-    modele = whisper.load_model(modele_dispo[mdl], device=dc)
+    modele = whisper.load_model(modele_dispo[get_model()], device=dc)
 
     results = []
     if useSplit:
