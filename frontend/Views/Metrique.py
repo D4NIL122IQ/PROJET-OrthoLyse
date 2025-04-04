@@ -1,8 +1,8 @@
 import math
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout, QSizePolicy, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout, QSizePolicy, QPushButton, QGraphicsDropShadowEffect, QMenu
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import Qt, QTimer, QSize
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtGui import QIcon, QPixmap, QColor, QAction
 
 from frontend.controllers.Menu_controllers import NavigationController
 from frontend.controllers.Result_controllers import ResultController
@@ -12,25 +12,25 @@ class Metrique(QWidget):
     def __init__(self):
         super().__init__()
         self.navController = NavigationController()
+        #instanciation du controller qui va s'occuper de faire les calculs
         self.resultatController = ResultController(transcrip=self.navController.get_text_transcription())
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.timer = QTimer()
+        self.timer = QTimer() #timer qui va nous servir a faire les animation
         self.timer.timeout.connect(self.update_animation)
-        self.animated_widgets = []
-
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        self.animated_widgets = [] #ce tableau contiendra tout les widget svg
+        self.size_card = 150
+        self.layout = QVBoxLayout(self) #layout principal
         self.layout.setAlignment(Qt.AlignCenter)
 
         self.top()
-        self.layout.addStretch()
+        self.layout.addStretch(1)
         self.container()
-        self.layout.addStretch()
+        self.layout.addStretch(1)
         self.bottom()
-        self.layout.addStretch()
+        self.layout.addStretch(1)
 
     def container(self):
+        """met en place une grille qui contient les resultats"""
         metrique = [
             {"label": "Mots", "getter": self.resultatController.get_word},
             {"label": "Mots différents", "getter": self.resultatController.get_dif_word},
@@ -39,23 +39,23 @@ class Metrique(QWidget):
             {"label": "Morphemes/énoncé", "getter": self.resultatController.get_morpheme_enonce},
             {"label": "Lemmes", "getter": self.resultatController.get_lemme}
         ]
+        #ce layout nous permet d'avoir une matrice afin de placer les cartes dedans
         grid = QGridLayout()
-
+        grid.setVerticalSpacing(20)
         for i in range(2):
             for j in range(3):
                 grid.addWidget(self.set_card(metrique[i * 3 + j]), i, j)
 
-        grid.setRowStretch(0, 1)  # Assure que la ligne 0 s’étire
-        grid.setRowStretch(1, 0)  # La ligne 1 ne doit pas bloquer l’espace
         self.layout.addLayout(grid)
         self.timer.start(20)
 
     def top(self):
+        """place un bouton qui nous permet de revenir a la home page"""
         icon = QIcon(QPixmap("./assets/SVG/home.svg"))
         btn = QPushButton()
         btn.setIcon(icon)
         btn.setIconSize(QSize(32, 32))
-        btn.setStyleSheet('background-color: white')
+        btn.setStyleSheet('background-color: transparent;')
         btn.setCursor(Qt.PointingHandCursor)
         btn.clicked.connect(self.return_home)
 
@@ -65,47 +65,63 @@ class Metrique(QWidget):
         self.layout.addLayout(hbox)
 
     def bottom(self):
+        """met en place un bouton 'Exporter' en bas de page"""
         hbox = QHBoxLayout()
         btn = QPushButton("Exporter")
-        btn.setStyleSheet(f"""
-                          background-color: white;
-                          color : black,
-                          border-radius: 12px;
-                          border: 2px solid black;
-                      """)
+        icon = QIcon(QPixmap("./assets/SVG/export.svg"))
+        btn.setIcon(icon)
+        btn.setIconSize(QSize(15, 15))
+        btn.setStyleSheet("background-color: white;"
+                          " color : black;"
+                          "border-radius: 12px;")
+
         btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         btn.setMinimumSize(90, 25)
         btn.setCursor(Qt.PointingHandCursor)
+        btn.clicked.connect(lambda : self.show_menu(btn))
         hbox.addStretch(2)
         hbox.addWidget(btn)
-        hbox.addStretch(1)
         self.layout.addLayout(hbox)
 
     def set_card(self, opt):
+        """Retourne un widget qui contient une representation d'un resultat des calculs"""
         wid = QWidget()
-        wid.setStyleSheet("background-color:rgb(255,255,255); border-radius: 20px")
-        wid.setFixedSize(140, 140)
+        wid.setStyleSheet("background-color:rgb(255,255,255); "
+                          "border-radius: 10px;")
+
+        wid.setFixedSize(self.size_card, self.size_card)
+
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)  # Flou de l'ombre
+        shadow.setOffset(5, 5)  # Décalage (x, y)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        wid.setGraphicsEffect(shadow)
 
         box = QVBoxLayout()
-        box.setContentsMargins(10, 10, 10, 10)
+        box.setContentsMargins(0,0,0,0)
         box.setSpacing(0)
 
         svg_widget = QSvgWidget()
-        svg_widget.setFixedSize(130, 130)
-        self.animated_widgets.append((svg_widget, opt["getter"](), 0))
+        svg_widget.setFixedSize(150, 130)
+
+        value = 100 if opt["getter"]() >= 100 else opt["getter"]()
+        self.animated_widgets.append((svg_widget, value, 0))
 
         box.addWidget(svg_widget, alignment=Qt.AlignCenter)
         box.addLayout(self.set_bottomCard(opt))
-        box.addStretch()
+        box.addStretch(1)
         wid.setLayout(box)
+        box.setAlignment(Qt.AlignCenter)
         return wid
 
     def set_bottomCard(self, info):
-        hBox = QHBoxLayout()
+        hBox = QVBoxLayout()
         label = QLabel(f' {info["getter"]()} {info["label"]}')
         label.setStyleSheet("color: #4c4c4c; background-color: transparent")
+        label.setWordWrap(True)
         label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        hBox.addStretch()
+        label.setAlignment(Qt.AlignCenter)
+        #hBox.addStretch()
         hBox.addWidget(label)
         hBox.addStretch()
         return hBox
@@ -136,8 +152,11 @@ class Metrique(QWidget):
         arrow_x2 = needle_x + arrow_size * math.cos(rad + math.radians(135))
         arrow_y2 = needle_y - arrow_size * math.sin(rad + math.radians(135))
 
+        # Calcul du pourcentage à afficher sous l'aiguille
+        percentage = int(value)
+
         svg_template = f'''
-        <svg width="250" height="100" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+        <svg width="130" height="130" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stop-color="red"/>
@@ -145,13 +164,43 @@ class Metrique(QWidget):
                     <stop offset="100%" stop-color="green"/>
                 </linearGradient>
             </defs>
-            <path d="M 25 100 A 40 40 0 1 1 125 100" fill="none" stroke="url(#gradient)" stroke-width="7" stroke-linecap="round"/>
+            <path d="M 25 100 A 40 40 0 1 1 125 100" fill="none" stroke="url(#gradient)" stroke-width="15" stroke-linecap="round"/>
             <line x1="75" y1="100" x2="{needle_x}" y2="{needle_y}" stroke="black" stroke-width="3"/>
             <polygon points="{needle_x},{needle_y} {arrow_x1},{arrow_y1} {arrow_x2},{arrow_y2}" fill="black"/>
             <circle cx="75" cy="100" r="5" fill="black"/>
+
+            <!-- Ajout du texte pourcentage en dessous de l'aiguille -->
+            <text x="75" y="130" font-size="12" text-anchor="middle" fill="black">{percentage} %</text>
         </svg>
         '''
         svg_widget.load(bytearray(svg_template, encoding='utf-8'))
 
     def return_home(self):
         self.navController.change_page("Home")
+
+    def show_menu(self, btn:QPushButton):
+
+        menu = QMenu(self)
+
+        # Actions pour les options du menu
+        pdf_action = QAction("PDF", self)
+        docx_action = QAction("DOCX", self)
+        svg_action = QAction("CSV", self)
+
+            # Connecter les actions à leurs fonctions (par exemple, pour l'export)
+        pdf_action.triggered.connect(self.export_as_pdf)
+        docx_action.triggered.connect(self.export_as_docx)
+
+            # Ajouter les actions au menu
+        menu.addAction(pdf_action)
+        menu.addAction(docx_action)
+        menu.addAction(svg_action)
+
+        # Afficher le menu sous le bouton
+        menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
+
+    def export_as_pdf(self):
+        print("Exporter en PDF")
+
+    def export_as_docx(self):
+        print("Exporter en DOCX")

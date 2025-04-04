@@ -6,6 +6,7 @@ class ResultController:
     """
     def __init__(self, transcrip=""):
         self.resultat = Analyse_NLTK(text=transcrip)
+        self.reultat_dic = ["Nom de mot"]
 
     def get_lemme(self):
         """Cette methode permet de renvoyer le nombre de lemme"""
@@ -32,4 +33,5 @@ class ResultController:
 
     def get_morpheme_enonce(self):
         """Cette methode permet de renvoyer le nombre de morpheme dans chaque enonces"""
-        return 100
+        return 100000
+
