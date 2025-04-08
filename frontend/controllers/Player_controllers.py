@@ -82,13 +82,12 @@ class PlayerController:
 
         new_pos = max(self.parent.player.position() - 10000, 0)
 
-        self.parent.player.setPosition(new_pos)
+        self.parent.player.set_audio_player(new_pos)
 
     def forward_10s(self):
 
         new_pos = min(self.parent.player.position() + 10000, self.parent.player.duration())
 
-        self.parent.player.setPosition(new_pos)
 
     def update_position(self, position):
 
@@ -124,7 +123,7 @@ class PlayerController:
 
             new_pos = int(slider_value / 100 * self.duration)
 
-            self.parent.player.setPosition(new_pos)
+            self.parent.player.set_audio_player(new_pos)
 
     def handle_media_status(self, status):
 
@@ -144,7 +143,6 @@ class PlayerController:
 
             self.is_playing = False
 
-            self.parent.player.setPosition(0)
 
     def set_playback_speed(self, speed):
 

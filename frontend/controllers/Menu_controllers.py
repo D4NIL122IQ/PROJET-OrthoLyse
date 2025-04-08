@@ -1,3 +1,4 @@
+import importlib
 import os
 import sys
 
@@ -18,6 +19,7 @@ class NavigationController:
             cls._instance = super(NavigationController, cls).__new__(cls)
             cls._instance.main_window = None  # RÃ©fÃ©rence Ã  MainWindow
             cls._instance.central_widget = None  # RÃ©fÃ©rence au QStackedWidget
+            cls._instance.position=None
             cls._instance.file_transcription_path = (
                 None  # RÃ©fÃ©rence au QStackedWidget
             )
@@ -38,77 +40,90 @@ class NavigationController:
             self.main_window.menu.show()
 
     def change_page(self, page_name):
-        """Change la page dans QStackedWidget"""
-        if self.central_widget:
-            if page_name == "Home":
-                self.central_widget.setCurrentWidget(self.main_window.home)
-            elif page_name == "Menu":
-                self.central_widget.setCurrentWidget(self.main_window.menu)
-            elif page_name == "ModeDeChargement":
-                self.central_widget.setCurrentWidget(
-                    self.main_window.mode_de_chargement
-                )
-            elif page_name == "ImporterAudio":
-                self.central_widget.setCurrentWidget(self.main_window.importer_audio)
-            elif page_name == "Settings":
-                self.central_widget.setCurrentWidget(self.main_window.settings)
-            elif page_name == "Information":
-                self.central_widget.setCurrentWidget(self.main_window.information)
-            elif page_name == "Enregistrer":
-                self.central_widget.setCurrentWidget(self.main_window.enregistrer)
-            elif page_name == "Help":
-                self.central_widget.setCurrentWidget(self.main_window.help)
-            elif page_name == "Prenregistrer":
-                self.central_widget.setCurrentWidget(self.main_window.prenregistrer)
-            elif page_name == "Enregistrer":
-                self.central_widget.setCurrentWidget(self.main_window.enregistrer)
-            elif page_name == "StopEnregistrer":
-                self.central_widget.setCurrentWidget(self.main_window.stopenregistrer)
-            elif page_name == 'Metrique':
-                self.central_widget.setCurrentWidget(self.main_window.metrique)
-            elif page_name == "Transcription":
+        """Affiche la page indiquée en créant le widget dynamiquement si nécessaire et en important le module à la demande."""
+        # Dictionnaire associant le nom de la page à un tuple :
+        # (nom_attribut, module_path, class_name, [instanciation])
+        # Pour les pages nécessitant des paramètres, on fournit une lambda pour l'instanciation.
+        pages = {
+            "Home": ("home", "frontend.Views.Home", "Home"),
+            "Menu": ("menu", "frontend.Views.Menu", "Menu"),
+            "ModeDeChargement": ("mode_de_chargement", "frontend.Views.ModeDeChargement", "ModeDeChargement"),
+            "ImporterAudio": ("importer_audio", "frontend.Views.ImporterAudio", "ImporterAudio"),
+            "Parametres": ("parametres", "frontend.Views.Parametres", "Parametres"),
+            "Information": ("information", "frontend.Views.Informations", "Informations"),
+            "Enregistrer": ("enregistrer", "frontend.Views.Enregistrement", "Enregistrement"),
+            "Help": ("help", "frontend.Views.HelpTranscription", "HelpTranscription"),
+            "Prenregistrer": ("prenregistrer", "frontend.Views.Prenregistrement", "Prenregistrement"),
+            "StopEnregistrer": ("stopenregistrer", "frontend.Views.StopEnregistrement", "StopEnregistrement"),
+            "Metrique": ("analyser", "frontend.Views.Metrique", "Metrique"),
+            # Pour ces pages, nous voulons toujours recréer le widget (actualisation des données)
+            "Transcription": (
+                "transcription",
+                "frontend.Views.Transcription",
+                "Transcription",
+                lambda: self._create_with_params("frontend.Views.Transcription", "Transcription",
+                                                 self.text_transcription, self.mapping_data,
+                                                 self.file_transcription_path)
+            ),
+            "CTanscription": (
+                "correction_transcription",
+                "frontend.Views.CorrectionTranscription",
+                "CorrectionTranscription",
+                lambda: self._create_with_params("frontend.Views.CorrectionTranscription", "CorrectionTranscription",
+                                                 self.text_transcription, self.mapping_data,
+                                                 self.file_transcription_path)
+            )
+        }
 
-                if self.get_text_transcription() is None:
-                    result = transcription(self.file_transcription_path, 0)
-                    self.set_text_transcription(result["text"])
-                    self.set_mapping_data(result["mapping"])
-                    self.set_first_mapping(result["mapping"])
-                # Vérifier si la page existe déjà
-                if (
-                    hasattr(self.main_window, "transcription")
-                    and self.main_window.transcription
-                    in self.main_window.qStackwidget.children()
-                ):
-                    self.main_window.qStackwidget.removeWidget(
-                        self.main_window.transcription
-                    )
-                    self.main_window.transcription.deleteLater()  # Libérer la mémoire
+        if page_name not in pages:
+            print(f"Page '{page_name}' non définie.")
+            return
 
-                # Créer une nouvelle instance
-                self.main_window.transcription = Transcription(self.text_transcription,self.mapping_data,self.file_transcription_path)
-                self.main_window.qStackwidget.addWidget(self.main_window.transcription)
-                self.central_widget.setCurrentWidget(self.main_window.transcription)
+        # Récupérer le tuple associé
+        entry = pages[page_name]
+        attr_name = entry[0]
 
-            elif page_name == "CTanscription":
-                # Vérifier si la page existe déjà
-                if (
-                    hasattr(self.main_window, "correction_tanscription")
-                    and self.main_window.correction_tanscription
-                    in self.main_window.qStackwidget.children()
-                ):
-                    self.main_window.qStackwidget.removeWidget(
-                        self.main_window.correction_tanscription
-                    )
-                    self.main_window.correction_tanscription.deleteLater()  # Libérer la mémoire
+        # Pour les pages devant être recréées systématiquement (Transcription et CTanscription)
+        if page_name in ["Transcription", "CTanscription"]:
+            if hasattr(self.main_window, attr_name):
+                old_widget = getattr(self.main_window, attr_name)
+                if old_widget in self.central_widget.children():
+                    self.central_widget.removeWidget(old_widget)
+                    old_widget.deleteLater()
+            # Utilisation de la lambda pour créer le widget avec des paramètres
+            new_widget = entry[3]()
+            setattr(self.main_window, attr_name, new_widget)
+            self.central_widget.addWidget(new_widget)
+            self.central_widget.setCurrentWidget(new_widget)
+        else:
+            # Pour les autres pages, on crée le widget s'il n'existe pas déjà
+            widget = getattr(self.main_window, attr_name, None)
+            if widget is None:
+                # Import dynamique du module et création du widget
+                module = importlib.import_module(entry[1])
+                cls = getattr(module, entry[2])
+                widget = cls()
+                setattr(self.main_window, attr_name, widget)
+                self.central_widget.addWidget(widget)
+            self.central_widget.setCurrentWidget(widget)
 
-                # Créer une nouvelle instance
-                self.main_window.correction_tanscription = CorrectionTranscription(self.text_transcription,self.mapping_data,self.file_transcription_path)
-                self.main_window.qStackwidget.addWidget(
-                    self.main_window.correction_tanscription
-                )
-                self.central_widget.setCurrentWidget(
-                    self.main_window.correction_tanscription
-                )
+    def _create_with_params(self, module_path, class_name, *args):
+        """Importe dynamiquement le module et crée une instance de la classe avec des arguments."""
+        module = importlib.import_module(module_path)
+        cls = getattr(module, class_name)
+        return cls(*args)
+
+    def set_audio_player(self, position):
+        self.position=position
+
+    def get_audio_player(self):
+        return self.position
+
+    def set_play_pause(self,play):
+        self.play=play
+
+    def get_play_pause(self):
+        return self.play
 
     def set_file_transcription_path(self, file_path):
         self.file_transcription_path = file_path

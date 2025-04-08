@@ -1,13 +1,21 @@
 import os
 
-from PySide6.QtCore import Qt, QEvent
+from PySide6.QtCore import Qt, QEvent, QRunnable, QThreadPool, Signal, QObject
 from PySide6.QtGui import QPixmap, QPainter, QCursor, QFont, QIcon
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, QLabel, QFileDialog, QHBoxLayout, QLineEdit, \
-    QPushButton
+    QPushButton, QApplication
 
+from backend.transcription import transcription
 from frontend.Widgets.Header import Header
 from frontend.controllers.Menu_controllers import NavigationController
+from PySide6.QtCore import QRunnable, QThreadPool
+AUDIO_EXTENSIONS = {
+    ".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".opus",
+    ".alac", ".ape", ".aiff", ".bwf", ".m4a", ".mp2", ".mp1",
+    ".amr", ".dsd", ".caf", ".ra", ".tta", ".voc", ".wv",
+    ".flv", ".webm", ".mkv", ".mp4", ".avi", ".mov", ".3gp"
+}
 
 
 class ImporterAudio(QWidget):
@@ -15,7 +23,7 @@ class ImporterAudio(QWidget):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.controller = NavigationController()
-        self.font,self.font_family=self.controller.set_font("./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf")
+        self.font, self.font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-SemiBold.ttf')
 
 
         # Layout principal
@@ -36,16 +44,22 @@ class ImporterAudio(QWidget):
         self.bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # Hauteur fixe uniquement
         self.bar.setMinimumSize(520, round(520*0.095))  # Largeur et hauteur définies
         self.bar.setMaximumSize(520, 60)
-        self.bar.setStyleSheet("""
+
+        self.bar.setStyleSheet("""QWidget{
             background-color: rgba(255, 255, 255, 204); /* Couleur semi-transparente */
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            border-top: 2px solid #CECECE;
+            border-left: 2px solid #CECECE;
+            border-right: 2px solid #CECECE;
+}
         """)
         self.text = QLabel("Telecharger l'audio", self.bar)
         self.text.setFont(self.font)
         self.text.setStyleSheet("""
             background-color: transparent;
-            color: #4c4c4c;
+            color: #007299;
+            border:none;
         """)
         layoutV = QVBoxLayout(self.bar)
         layoutV.setContentsMargins(10, 0, 0, 0)
@@ -54,11 +68,12 @@ class ImporterAudio(QWidget):
 
     def br(self):
         self.line = QWidget(self)
+
         self.line.setMinimumSize(320, 2)  # Largeur de 320px et hauteur de 2px (ajustez selon vos besoins)
         self.line.setMaximumSize(520,2)
-        #self.line.setStyleSheet(
-           # "background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #9c27b0, stop:1 #ff4081);"
-       # )
+        self.line.setStyleSheet(
+           "background-color: #CECECE;"
+        )
         self.layout.addWidget(self.line)
 
     def body(self):
@@ -67,8 +82,11 @@ class ImporterAudio(QWidget):
         self.box.setMaximumSize(520,420)
         self.box.setStyleSheet("""
             background-color: rgba(255, 255, 255, 204); /* Couleur semi-transparente */
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-bottom: 2px solid #CECECE;
+            border-left: 2px solid #CECECE;
+            border-right: 2px solid #CECECE;
         """)
         # Création et configuration de la zone de dépôt
         self.drop_area_in_body()
@@ -98,34 +116,59 @@ class ImporterAudio(QWidget):
     def page_mode(self):
         self.controller.change_page("ModeDeChargement")
 
-    def boutton(self,parent=None,text="Boutton",color_text="#FFFFFF",color_br="#B3B3B3",color_bg="#B5B5B5"):
+    def boutton(self, parent=None, text="Boutton", color_text="#FFFFFF", color_br="#B3B3B3", color_bg="#B5B5B5"):
         # Créer le QPushButton
         boutton_init = QPushButton(parent)
-        boutton_init.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+        boutton_init.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         boutton_init.setMinimumSize(80, 20)  # Ajustez les dimensions si nécessaire
-        #boutton_init.setMaximumSize(100, 40)
+        font, font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-Medium.ttf')
 
-        boutton_init.setStyleSheet(f"""
-                background-color: {color_bg};
-                border-radius: 10px;
-                border: 2px solid {color_br};
+        # Définir l'objectName et le style en fonction du texte
+        if text != "Annuler":
+            boutton_init.setObjectName("bt")
+            boutton_init.setStyleSheet(f"""
+                QPushButton#bt {{
+                    background: qlineargradient(spread:pad, 
+                                                x1:0, y1:0, x2:0, y2:1, 
+                                                stop:0 #56E0E0, 
+                                                stop:0.5 #007299);
+                    border-radius: 10px;
+                    border: 2px solid transparent;
+                }}
             """)
+        else:
+            boutton_init.setObjectName("an")
+            boutton_init.setStyleSheet(f"""
+                QPushButton#an {{
+                    background-color: #FFF;
+                    border-radius: 10px;
+                    border: 2px solid #007299;
+                    
+                }}
+            """)
+
         boutton_init.setCursor(Qt.PointingHandCursor)
 
         # Créer un QLabel à l'intérieur du bouton pour le texte centré
         label = QLabel(text, boutton_init)
-        label.setStyleSheet(f"color: {color_text}; border: none;")
-        label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-        label.setAlignment(Qt.AlignCenter)  # Centrage horizontal et vertical
-        self.font,self.font_family=self.controller.set_font("./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf")
-        self.font = QFont(self.font_family, 8)
+        label.setObjectName("btLabel")
+        # Appliquer un style différent si nécessaire (on peut aussi gérer cela avec une condition)
+        if text != "Annuler":
+            label.setStyleSheet(
+                "QLabel#btLabel { color: #FFFFFF; border: none; background: transparent; }"
+            )
+        else:
+            label.setStyleSheet(
+                "QLabel#btLabel { color: #007299; border: none; background: transparent; }"
+            )
+        label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        label.setAlignment(Qt.AlignCenter)
+        label.setFont(font)
 
-        label.setFont(self.font)
-
-        # Utiliser un layout vertical pour ajouter le QLabel dans le QPushButton
+        # Utiliser un layout pour ajouter le QLabel au bouton
         layout = QHBoxLayout(boutton_init)
-        layout.addWidget(label)  # Ajouter le QLabel au centre du bouton
-        layout.setContentsMargins(0, 0, 0, 0)  # Marges à zéro pour remplir tout l'espace du QPushButton
+        layout.addWidget(label)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
         return boutton_init
@@ -135,9 +178,9 @@ class ImporterAudio(QWidget):
         self.dropZone.setAcceptDrops(True)
         self.dropZone.setMinimumSize(round(520*0.81), round(round(520*0.81)*0.5))
         self.dropZone.setStyleSheet("""
-            border: 2px dashed #00BCD4;
+            border: 2px dashed #017399;
             border-radius: 15px;
-            background-color: rgba(0, 188, 212, 0.1);
+            background-color: #FBFBFB;
         """)
         # Installation de l'event filter sur la zone de dépôt
         self.dropZone.installEventFilter(self)
@@ -151,23 +194,23 @@ class ImporterAudio(QWidget):
         self.text1 = self.set_text("Faites glisser votre audio ici \n")
         self.text2 = self.set_text("ou\n")
         self.browse_button = self.boutton(self.dropZone, "Parcourir", "#FFFFFF", "#15B5D4", "#15B5D4")
+        self.browse_button.setFont(self.fontBold)
         label=self.browse_button.findChild(QLabel)
         label.setObjectName("par")
-        self.icon_label = QLabel()
-        self.icon_label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+        label.setStyleSheet(
+            "QLabel#par { color: #FFFFFF; border: none; background: transparent; }"
+        )
+
+        self.icon_label = self.icon_file_upload("./assets/SVG/icon _folder opened_.svg")
+        # Ajuster éventuellement la taille si nécessaire :
+        self.icon_label.setFixedSize(17, 12)
         #self.icon_label.setStyleSheet("background: black;")
-        pixmap = QPixmap("./assets/SVG/icon _folder opened_.svg")  # Charge l’image
 
         # Redimensionner l’image en gardant l’aspect ratio
-        scaled_pixmap = pixmap.scaled(17, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.icon_label.setPixmap(scaled_pixmap)
         layout =self.browse_button.layout()
         font = QFont(self.browse_button.font().family(), 10)
         self.browse_button.setFont(font)
-        self.browse_button.setObjectName("parcourir_button")
-
         # Centrer l’icône
-        self.icon_label.setAlignment(Qt.AlignCenter)
         layout.insertWidget(0, self.icon_label)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -181,7 +224,8 @@ class ImporterAudio(QWidget):
 
     def set_text(self,text):
         text = QLineEdit(text,self.dropZone)
-        text.setFont(self.font)
+        self.fontBold,font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
+        text.setFont(self.fontBold)
         text.setStyleSheet("background: transparent; color: #4c4c4c;border:none;")
         text.setReadOnly(True)  # Empêche l'édition
         text.setFrame(False)  # Supprime la bordure
@@ -195,84 +239,133 @@ class ImporterAudio(QWidget):
         svg_widget = QSvgWidget(self.dropZone)
         svg_widget.load(icone)
         svg_widget.setFixedSize(20, 30)
+        svg_widget.setObjectName("fich")
         # Appliquer une feuille de style pour enlever le fond et la bordure
-        svg_widget.setStyleSheet("background: transparent; border: none;")
+        svg_widget.setStyleSheet("QSvgWidget#fich{background: transparent; border: none;}")
         # Permettre un fond transparent (optionnel, parfois nécessaire)
         svg_widget.setAttribute(Qt.WA_TranslucentBackground, True)
         return svg_widget
-        pass
 
-    def reload_in_drop_zone(self,path):
+    def reload_in_drop_zone(self,path,accepte=True):
         self.text1.setText(f"{os.path.basename(path)}\n")
         self.svg_widget.load("./assets/SVG/icone_audio.svg")
         self.svg_widget.setFixedSize(30, 40)
         pixmap = QPixmap("./assets/SVG/icon _folder opened_.svg")  # Charge l’image
 
         # Redimensionner l’image en gardant l’aspect ratio
-        scaled_pixmap = pixmap.scaled(17, 12, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.icon_label.setPixmap(scaled_pixmap)
 
-        self.right_boutton.setStyleSheet(f"""
-                        background-color: #15B5D4;
-                        border-radius: 10px;
-                        border: 2px solid #15B5D4;
-                    """)
-        self.right_boutton.clicked.connect(lambda: self.controller.change_page("Transcription"))
+        self.right_boutton.clicked.connect(self.back_exe)
+
+    def back_exe(self):
+        # Récupérer le chemin du fichier audio actuellement sélectionné
+        current_file = self.controller.get_file_transcription_path()
+
+        # Si une transcription est déjà en cours, on ne fait rien
+
+
+        # Si le fichier n'a pas changé depuis la dernière transcription, on ne relance pas
+        if hasattr(self, "last_file_path") and self.last_file_path == current_file:
+            print("Le fichier audio n'a pas changé.")
+            return
+
+        # Mémoriser le fichier actuel et indiquer qu'une transcription est en cours
+        self.last_file_path = current_file
+        self.transcription_in_progress = True
+
+        # Créer le QRunnable pour exécuter la transcription dans un thread séparé
+        runnable = TranscriptionRunnable(self.controller)
+
+        # Fonction à appeler une fois la transcription terminée
+        def on_transcription_finished():
+            self.transcription_in_progress = False
+            self.controller.change_page("Transcription")
+
+        # Connecter le signal "fin" à la fonction de fin
+        runnable.signals.fin.connect(on_transcription_finished)
+
+        # Exécuter le QRunnable dans le QThreadPool
+        QThreadPool.globalInstance().start(runnable)
 
     def eventFilter(self, obj, event):
-        # Vérifie si l'objet est la zone de dépôt
         if obj == self.dropZone:
             if event.type() == QEvent.DragEnter:
                 if event.mimeData().hasUrls():
-                    event.acceptProposedAction()
+                    files = [u.toLocalFile() for u in event.mimeData().urls()]
+                    if any(os.path.splitext(f)[1].lower() in AUDIO_EXTENSIONS for f in files):
+                        event.acceptProposedAction()
+                    else:
+                        event.ignore()
+
                     return True  # Événement traité
+
+
             elif event.type() == QEvent.Drop:
                 files = [u.toLocalFile() for u in event.mimeData().urls()]
-                print("Fichier déposé:", files[0])  # Gestion du fichier déposé
-                print("\nnom:", os.path.basename(files[0]))
-                self.reload_in_drop_zone(files[0])
-                self.controller.set_file_transcription_path(files[0])
+                valid_files = [f for f in files if os.path.splitext(f)[1].lower() in AUDIO_EXTENSIONS]
+                print(valid_files)
+                if valid_files:
+                    file_path = valid_files[0]  # Prend le premier fichier audio valide
+                    print("✅ Fichier déposé:", file_path)
+                    print("\nnom:", os.path.basename(file_path))
+                    self.reload_in_drop_zone(file_path)
+                    self.controller.set_file_transcription_path(file_path)
+
                 return True  # Événement traité
         return super().eventFilter(obj, event)
 
     def open_file_dialog(self):
         file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Sélectionner un fichier audio", "",
-                                                   "Fichiers audio (*.mp3 *.wav *.flac)")
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+
+        # Définit les types de fichiers audio acceptés
+        filter_str = "Fichiers audio (*.mp3 *.wav *.flac *.aac *.ogg *.wma *.opus *.alac *.ape *.aiff *.bwf *.m4a *.mp2 *.mp1 *.amr *.dsd *.caf *.ra *.tta *.voc *.wv *.flv *.webm *.mkv *.mp4 *.avi *.mov *.3gp)"
+
+        # Ouvre le dialogue de sélection de fichier
+        file_path, _ = file_dialog.getOpenFileName(self, "Sélectionner un fichier audio", "./", filter_str)
+
         if file_path:
-            print("Fichier sélectionné :", file_path)  # Gestion du fichier sélectionné
-            print("\nnom:",os.path.basename(file_path))
-            self.reload_in_drop_zone(file_path)
-            self.controller.set_file_transcription_path(file_path)
+                print("Fichier sélectionné :", file_path)  # Gestion du fichier sélectionné
+                print("\nnom:",os.path.basename(file_path))
+                self.reload_in_drop_zone(file_path)
+                self.controller.set_file_transcription_path(file_path)
 
     def adjust_boutton_size(self, event=None):
         if not self.parentWidget():
-            return  # Éviter une erreur si le parent n'existe pas encore
+            return
 
-        # Définir une taille minimale et maximale
         min_size, max_size = 90, 110
-
-        # Calculer une taille proportionnelle à la largeur de la fenêtre
         bouton_size = int(self.parentWidget().width() * 0.14)
         new_bouton_size = max(min_size, min(bouton_size, max_size))
 
-        # Appliquer la configuration aux boutons
-        for button in [self.browse_button, self.right_boutton,self.left_boutton]:
-            if button.objectName() == "parcourir_button":
-                button.setFixedSize(new_bouton_size+10, round((new_bouton_size+10) * 0.25))
+        for button in [self.browse_button, self.right_boutton, self.left_boutton]:
+            if button.objectName() == "par":
+                button.setFixedSize(new_bouton_size + 10, round((new_bouton_size + 10) * 0.25))
             else:
                 button.setFixedSize(new_bouton_size, round(new_bouton_size * 0.25))
 
+            # Récupérer la feuille de style actuelle
             style = button.styleSheet()
 
-            # Supprimer toute ligne contenant "border-radius"
-            new_style = "\n".join(line for line in style.split("\n") if "border-radius" not in line)
-
-            # Ajouter le nouveau border-radius
-            new_style += f"\nborder-radius: {min(button.width(), button.height()) // 2}px;"
-
-            # Appliquer le style modifié
-            button.setStyleSheet(new_style)
+            # Chercher le bloc de style dans lequel on souhaite ajouter border-radius.
+            # On suppose ici que la feuille de style commence par "QPushButton#bt{"
+            start = style.find("{")
+            end = style.rfind("}")
+            if start != -1 and end != -1:
+                # Extraire le contenu interne
+                inner = style[start + 1:end]
+                # Supprimer toute ligne contenant "border-radius"
+                inner = "\n".join(line for line in inner.split("\n") if "border-radius" not in line)
+                # Ajouter la nouvelle propriété à l'intérieur du bloc
+                new_radius = min(button.width(), button.height()) // 2
+                inner += f"\nborder-radius: {new_radius}px;"
+                # Reconstruire la feuille de style
+                new_style = style[:start + 1] + inner + style[end:]
+                button.setStyleSheet(new_style)
+            else:
+                # Si la feuille de style n'est pas dans le format attendu, on peut l'appliquer directement.
+                new_radius = min(button.width(), button.height()) // 2
+                button.setStyleSheet(f"border-radius: {new_radius}px;")
+            print("btn", min(button.width(), button.height()))
 
     def resizeEvent(self, event):
         """Gestion de différents événements"""
@@ -287,8 +380,8 @@ class ImporterAudio(QWidget):
         if not self.parentWidget():
             return  # Éviter une erreur si le parent n'existe pas encore
 
-        max_size=70;
-        min_size=40;
+        max_size=70
+        min_size=30
         new_size=int(self.dropZone.height()*0.25)
         new_size = max(min_size, min(new_size, max_size))
 
@@ -301,9 +394,9 @@ class ImporterAudio(QWidget):
         parent_width = self.box.parentWidget().width()
 
         # Calcul de la largeur et de la hauteur en fonction du parent
-        box_width = round(parent_width * 0.5)
-        bar_width = round(parent_width * 0.5)
-        line_width = round(parent_width * 0.5)
+        box_width = round(parent_width * 0.55)
+        bar_width = round(parent_width * 0.55)
+        line_width = round(parent_width * 0.55)
         # Appliquer un maximum de 520px pour box, bar, et line
         max_width = 520
 
@@ -313,10 +406,10 @@ class ImporterAudio(QWidget):
         line_width = min(line_width, max_width)
 
         # Définir la taille des widgets
-        self.box.setFixedSize(box_width, round(box_width * 0.68))
-        self.bar.setFixedSize(bar_width, round(bar_width * 0.095))
+        self.box.setFixedSize(box_width, round(box_width * 0.71))
+        self.bar.setFixedSize(bar_width, round(bar_width * 0.11))
         self.line.setFixedSize(line_width, 2)  # Largeur limitée à 520px et hauteur de 2px
-        self.dropZone.setFixedSize(round(box_width*0.81), round(round(box_width*0.81)*0.5))
+        self.dropZone.setFixedSize(round(box_width*0.81), round(round(box_width*0.81)*0.55))
 
     def adjustFont_top(self, event=None):
         """Ajuste la taille de la police du bouton en fonction de la largeur de la fenêtre"""
@@ -328,12 +421,13 @@ class ImporterAudio(QWidget):
         max_size = 16
 
         # Calculer une taille proportionnelle à la largeur de la fenêtre
-        new_font_size = int(self.parentWidget().width() * 0.01)  # 1% de la largeur
+        new_font_size = int(self.parentWidget().width() * 1)  # 1% de la largeur
         # S'assurer que la taille est dans les limites définies
         new_font_size = max(min_size, min(new_font_size, max_size))
 
         # Appliquer la nouvelle taille de police au bouton
         font = QFont(self.text1.font().family(), new_font_size)
+        #print(new_font_size)
         self.text1.setFont(font)
         self.text2.setFont(font)
 
@@ -369,24 +463,40 @@ class ImporterAudio(QWidget):
             return  # Éviter une erreur si le parent n'existe pas encore
 
         # Définir une taille minimale et maximale
-        min_size = 8
+        min_size = 12
         max_size = 14
 
         # Calculer une taille proportionnelle à la largeur de la fenêtre
         new_font_size = int(self.parentWidget().width() * 0.014)  # 1% de la largeur
         # S'assurer que la taille est dans les limites définies
         new_font_size = max(min_size, min(new_font_size, max_size))
-        #print(new_font_size)
+        #print("body",new_font_size)
 
         # Appliquer la nouvelle taille de police au bouton
         font = QFont(self.text.font().family(), new_font_size)
         self.text.setFont(font)
 
-def icon_file_upload(self):
-    label = QLabel(self.dropZone)
-    label.setScaledContents(True)  # Permet au SVG de s'adapter tout en conservant l'aspect ratio
-    label.setPixmap(QPixmap("./assets/SVG/icon_file_upload.svg"))
-    label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # S'adapte au parent
-    label.setMaximumSize(80, 80)  # Taille max pour éviter qu'il soit trop grand
-    return label
 
+class WorkerSignals(QObject):
+    fin = Signal()  # Signal émis à la fin du traitement
+
+class TranscriptionRunnable(QRunnable):
+    def __init__(self, controller):
+        super().__init__()
+        self.controller = controller
+        self.signals = WorkerSignals()
+
+    def run(self):
+        # Change le curseur en mode de chargement sur le widget central
+        self.controller.central_widget.setCursor(Qt.WaitCursor)
+
+        # Exécute la transcription
+        result = transcription(self.controller.get_file_transcription_path())
+
+        # Mise à jour de l'interface utilisateur
+        self.controller.set_text_transcription(result["text"])
+        self.controller.set_mapping_data(result["mapping"])
+        self.controller.set_first_mapping(result["mapping"])
+        # Remet le curseur à son état normal une fois le traitement terminé
+        self.controller.central_widget.setCursor(Qt.ArrowCursor)
+        self.signals.fin.emit()

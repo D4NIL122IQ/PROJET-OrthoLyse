@@ -37,8 +37,10 @@ class CorrectionTranscription(QWidget):
         self.mapping_data = mapping_data
         self.layout = QHBoxLayout(self)
         self.layout.setAlignment(Qt.AlignCenter)
-        self.audio_player = AudioPlayer(self.path)
+        self.audio_player=self.controller.get_audio_player()
         self.audio_player.position_en_secondes.connect(self.on_position_changed)
+
+
 
         self.feuille = Feuille(
             "./assets/SVG/icone_file_text.svg", "Correction", "Valider", "Annuler",

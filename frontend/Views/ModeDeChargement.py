@@ -28,12 +28,9 @@ class ModeDeChargement(QWidget):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.controller = NavigationController()
-
+        self.font, self.font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-Medium.ttf')
         # Palette de couleurs pour personnaliser l'apparence de la fenêtre
-        palette = QPalette()
-        palette.setColor(QPalette.Window, QColor(0, 0, 0, 110))  # Rouge
-        self.setAutoFillBackground(True)
-        self.setPalette(palette)
+
 
         self.layout = QVBoxLayout(self)
         self.layout.addStretch(1)
@@ -52,10 +49,8 @@ class ModeDeChargement(QWidget):
         Définit également la police du texte.
         """
         self.text = QLabel("Veuillez choisir un mode pour charger votre audio", self)
-        self.font, self.font_family = self.controller.set_font(
-            "./assets/Fonts/Inknut_Antiqua/InknutAntiqua-Medium.ttf"
-        )
         self.text.setFont(self.font)
+        self.text.setStyleSheet("color: black")
 
         self.layout.addWidget(self.text, alignment=Qt.AlignCenter)
 
@@ -74,7 +69,7 @@ class ModeDeChargement(QWidget):
         self.layoutV.addWidget(self.left_text, alignment=Qt.AlignCenter)
 
         self.layoutH = QHBoxLayout()
-        self.layoutH.addStretch(1)
+        self.layoutH.addStretch(6)
         self.layoutH.addLayout(self.layoutV)
         self.layoutH.addStretch(2)
 
@@ -90,7 +85,7 @@ class ModeDeChargement(QWidget):
 
         self.layoutH.addLayout(self.layoutV2)
 
-        self.layoutH.addStretch(1)
+        self.layoutH.addStretch(6)
         self.layout.addLayout(self.layoutH)
 
     def importer_audio(self):
@@ -119,11 +114,14 @@ class ModeDeChargement(QWidget):
         bouton.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         bouton.setFixedSize(150, 150)
         bouton.setStyleSheet(
-            "background-color: transparent;"
-            "color: white;"
-            f"border-radius: 40px;"
-            "border: 2px solid white;"
-            "padding: 10px;"
+            """background: qlineargradient(spread:pad, 
+                                                x1:0, y1:0, x2:0, y2:1, 
+                                                stop:0 #56E0E0, 
+                                                stop:0.5 #007299);
+            color: white;
+            border-radius: 40px;
+            border: 2px solid white;
+            padding: 10px;"""
         )
         bouton.setIconSize(QtCore.QSize(140, 140))
         return bouton
@@ -136,17 +134,9 @@ class ModeDeChargement(QWidget):
         :return: Le label avec le texte et la police définis.
         """
         text_label = QLabel(text, self)
-        font_id = QFontDatabase.addApplicationFont(
-            "./assets/Fonts/Inter,Montserrat,Roboto/Inter/Inter-VariableFont_opsz,wght.ttf"
-        )
-        if font_id == -1:
-            print("Erreur : Impossible de charger la police.")
-        else:
-            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-            self.font = QFont(font_family, 10)
-
         text_label.setWordWrap(False)
         text_label.setFont(self.font)
+        text_label.setStyleSheet("color: #017399")
         return text_label
 
     def adjustFontSize_button(self, event=None):
@@ -156,8 +146,8 @@ class ModeDeChargement(QWidget):
         if not self.parentWidget():
             return  # Éviter une erreur si le parent n'existe pas encore
 
-        min_size = 10
-        max_size = 16
+        min_size = 12
+        max_size = 18
         new_font_size = int(self.parentWidget().width() * 0.01)
         new_font_size = max(min_size, min(new_font_size, max_size))
 
@@ -187,11 +177,14 @@ class ModeDeChargement(QWidget):
         def configure_button(button):
             button.setFixedSize(new_bouton_size, new_bouton_size)
             button.setStyleSheet(
-                "background-color: transparent;"
-                "color: white;"
-                f"border-radius: {round(new_bouton_size * 0.26)}px;"
-                "border: 2px solid white;"
-                "padding: 10px;"
+                f"""background: qlineargradient(spread:pad, 
+                                                x1:0, y1:0, x2:0, y2:1, 
+                                                stop:0 #56E0E0, 
+                                                stop:0.5 #007299);
+                color: white;
+                border-radius: {round(new_bouton_size * 0.26)}px;
+                border: 2px solid white;
+                padding: 10px;"""
             )
             button.setIconSize(QtCore.QSize(new_bouton_size - 10, new_bouton_size - 10))
 
@@ -205,9 +198,9 @@ class ModeDeChargement(QWidget):
         if not self.parentWidget():
             return
 
-        min_size = 10
-        max_size = 26
-        new_font_size = int(self.parentWidget().width() * 0.015)
+        min_size = 16
+        max_size = 36
+        new_font_size = int(self.parentWidget().width() * 0.02)
         new_font_size = max(min_size, min(new_font_size, max_size))
 
         font = QFont(self.text.font().family(), new_font_size)

@@ -19,6 +19,7 @@ class Home(QWidget):
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.controller = NavigationController()
+        self.font, self.font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
 
         # Layout principal en colonne (vertical)
         self.layoutV = QVBoxLayout(self)
@@ -50,16 +51,23 @@ class Home(QWidget):
         """
         Affiche le texte central de l'écran d'accueil pour attirer l'attention sur le produit.
         """
-        self.middle_text_label = QLabel(
-            "Premier analyseur<br> de la complexité <br>syntaxique sur le<br> marché <b>francophone</b>", self)
-        font = QFont("Inter", 14)
-        self.middle_text_label.setWordWrap(True)
-        self.middle_text_label.setFont(font)
 
+        self.middle_text_label = QLabel(
+            "Premier analyseur<br> de la complexité <br>syntaxique sur le<br> marché <b><font color=#007299>francophone</font></b>", self)
+        self.middle_text_label.setWordWrap(True)
+        self.middle_text_label.setFont(self.font)
+        self.middle_text_label.setStyleSheet("color:black;")
+
+        self.label_fond = QLabel(self)
+        self.label_fond.setAlignment(Qt.AlignCenter)
+        self.pixmap = QPixmap("./assets/image/Adobe Express - file 1.png")
+        self.ajuster_image()
         self.layoutH = QHBoxLayout()
-        self.layoutH.addStretch(2)
+        self.layoutH.addStretch(5)
         self.layoutH.addWidget(self.middle_text_label)
-        self.layoutH.addStretch(15)
+        self.layoutH.addStretch(14)
+        self.layoutH.addWidget(self.label_fond)
+        self.layoutH.addStretch(5)
 
         self.layoutV.addLayout(self.layoutH)
 
@@ -69,9 +77,7 @@ class Home(QWidget):
         """
         self.bottom_text_label = QLabel(
             "Chargez un audio pour calculer les métriques linguistiques :", self)
-
-        self.font, self.font_family = self.controller.set_font(
-            './assets/Fonts/Inter,Montserrat,Roboto/Inter/Inter-VariableFont_opsz,wght.ttf')
+        self.bottom_text_label.setStyleSheet("color: #007299;")
 
         layoutV = QVBoxLayout()
         layoutV.addWidget(self.bottom_text_label)
@@ -83,11 +89,13 @@ class Home(QWidget):
         self.bottom_bouton.setCursor(Qt.PointingHandCursor)
         self.bottom_bouton.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)  # Ajuster la largeur au contenu
         self.bottom_bouton.setStyleSheet(
-            "background-color: transparent;"
-            "color: white;"
-            f"border-radius: 15px;"
-            "border: 3px solid white;"
-            "padding: 10px;")
+            f"""background: qlineargradient(spread:pad, 
+                                    x1:0, y1:0, x2:1, y2:0, 
+                                    stop:0 #56E0E0, 
+                                    stop:1 #007299);
+            color: white;
+            border-radius: 15px;
+            padding: 8px;""")
         self.bottom_bouton.clicked.connect(self.view_choice)
 
         layoutV.addWidget(self.bottom_bouton, alignment=Qt.AlignCenter)
@@ -119,7 +127,7 @@ class Home(QWidget):
         info_btn = QPushButton()
         info_btn.setIcon(iconInfo)
         info_btn.setIconSize(QSize(38, 38))
-        info_btn.setStyleSheet("border: 0px;")
+        info_btn.setStyleSheet("color:#007299;border: 0px;")
         info_btn.setCursor(Qt.PointingHandCursor)
         info_btn.clicked.connect(self.view_info)
         layoutH.addStretch(1)
@@ -141,14 +149,16 @@ class Home(QWidget):
         self.adjustFontSize_middle(event)
         self.adjustFontSize_bottom(event)
         self.adjustFontSize_button(event)
-
+        self.ajuster_image()
         # Pour garder un bouton rond
         self.bottom_bouton.setStyleSheet(
-            f""" background-color: transparent;
+            f""" background: qlineargradient(spread:pad, 
+                                    x1:0, y1:0, x2:1, y2:0, 
+                                    stop:0 #56E0E0, 
+                                    stop:1 #007299);
                     color: white;
                     border-radius: {min(self.bottom_bouton.width(), self.bottom_bouton.height()) // 3}px;
-                    border: 3px solid white;
-                    padding: 10px;"""
+                    padding: 8px;"""
         )
 
     def adjustFontSize_button(self, event=None):
@@ -159,8 +169,8 @@ class Home(QWidget):
             return  # Éviter une erreur si le parent n'existe pas encore
 
         # Définir une taille minimale et maximale
-        min_size = 10
-        max_size = 14
+        min_size = 12
+        max_size = 16
 
         # Calculer une taille proportionnelle à la largeur de la fenêtre
         new_font_size = int(self.parentWidget().width() * 0.01)  # 1% de la largeur
@@ -184,8 +194,8 @@ class Home(QWidget):
             return  # Éviter une erreur si le parent n'existe pas encore
 
         # Définir une taille minimale et maximale
-        min_size = 14
-        max_size = 32
+        min_size = 16
+        max_size = 34
 
         # Calculer une taille proportionnelle à la largeur de la fenêtre
         new_font_size = int(self.parentWidget().width() * 0.02)  # 2% de la largeur
@@ -205,8 +215,8 @@ class Home(QWidget):
             return  # Éviter une erreur si le parent n'existe pas encore
 
         # Définir une taille minimale et maximale
-        min_size = 10
-        max_size = 14
+        min_size = 12
+        max_size = 16
 
         # Calculer une taille proportionnelle à la largeur de la fenêtre
         new_font_size = int(self.parentWidget().width() * 0.01)  # 1% de la largeur
@@ -217,3 +227,26 @@ class Home(QWidget):
         # Appliquer la nouvelle taille de police
         font = QFont(self.bottom_text_label.font().family(), new_font_size)
         self.bottom_text_label.setFont(font)
+
+    def ajuster_image(self):
+        """
+        Redimensionne l'image de fond pour l'adapter à 65% de la taille de la fenêtre.
+        Maintient l'aspect ratio en ajustant l'image à la taille de la fenêtre.
+        """
+        # Calculer la taille à 25% de la taille de la fenêtre
+        width = self.width() * 0.65
+        height = self.height() * 0.65
+
+        # Redimensionner l'image pour s'adapter à cette taille
+        pixmap_redimensionne = self.pixmap.scaled(
+            width, height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+
+        # Appliquer l'image redimensionnée sur le label
+        self.label_fond.setPixmap(pixmap_redimensionne)
+        self.label_fond.setGeometry(
+            (self.width() - width) // 2,
+            (self.height() - height) // 2,
+            width,
+            height
+        )

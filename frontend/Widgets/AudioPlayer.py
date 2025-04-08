@@ -15,23 +15,28 @@ class AudioPlayer(QWidget):
 
     position_en_secondes = Signal(float)
 
-    def __init__(self,path=None):
+    def __init__(self,path=None,play=False,current=0):
         super().__init__()
         self.path=path
         self.setFixedSize((642 // 2) - 40, 100)
+        from frontend.controllers.Menu_controllers import NavigationController
+
+        self.controller=NavigationController()
         self.font, self.font_family = self.set_font(
             "./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf")
         self.inner_widgets()
-        self.init_player(self.path)
+        self.init_player(self.path,play,current)
         #self.slots()
 
-    def init_player(self, file_path):
+    def init_player(self, file_path,play=False,current=0):
         self.player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
         self.player.setAudioOutput(self.audio_output)
         self.player.setSource(QUrl.fromLocalFile(file_path))
         self.is_playing = False
         self.player.stop()
+
+
         self.duration = 0
         self.player.positionChanged.connect(self.update_position)
         self.player.durationChanged.connect(self.update_duration)
@@ -42,14 +47,25 @@ class AudioPlayer(QWidget):
         self.rewind_button.clicked.connect(self.rewind_10s)
         self.forward_button.clicked.connect(self.forward_10s)
 
+    def check(self):
+        if self.controller.get_play_pause():
+            self.toggle_play_pause()
+            print("ixi", self.controller.get_audio_player())
     def toggle_play_pause(self):
         if not self.is_playing:
             self.player.play()
             self.play_pause_button.setIcon(QIcon("./assets/SVG/pause.svg"))
+            self.controller.set_play_pause(True)
+
         else:
             self.player.pause()
             self.play_pause_button.setIcon(QIcon("./assets/SVG/play_arrow.svg"))
+            self.controller.set_play_pause(False)
+
         self.is_playing = not self.is_playing
+
+
+
 
     def rewind_10s(self):
         self.player.setPosition(max(self.player.position() - 10000, 0))
@@ -66,6 +82,7 @@ class AudioPlayer(QWidget):
         self.position_en_secondes.emit(position / 1000)
         mm, ss = divmod(position // 1000, 60)
         self.left_time_label.setText(f"{mm:02d}:{ss:02d}")
+
 
     def update_duration(self, dur):
         self.duration = dur
@@ -90,7 +107,8 @@ class AudioPlayer(QWidget):
         """
         Retourne la position actuelle du fichier audio en secondes.
         """
-        return self.player.position() / 1000.0
+        print(self.player.position())
+        return self.player.position()
 
     def set_font(self, font_path):
         font_id = QFontDatabase.addApplicationFont(font_path)
@@ -141,26 +159,42 @@ class AudioPlayer(QWidget):
         button.setIconSize((self.size() / sizeicone))
         button.setFixedSize(sizebutton, sizebutton)
         button.setCursor(Qt.PointingHandCursor)
-        button.setStyleSheet(f"""
-                            QPushButton {{
-                                background-color: #fff;
-                                border-radius: {(sizebutton // 2) - 1}px;
-                            }}
-                            QPushButton:hover {{
-                                background-color: #CCC;
-                            }}
-                                QPushButton::menu-indicator {{ width: 0; height: 0; }}
+        if(file_path=="./assets/SVG/play_arrow.svg"):
+            button.setObjectName("play")
+            button.setStyleSheet(f"""
+                                QPushButton#play {{
+                                    background-color: #007299;
+                                    border-radius: {(sizebutton // 2) - 1}px;
+                                }}
+                                
+                                QPushButton#play::menu-indicator {{ width: 0; height: 0; }}
+    
+                            """)
+        else:
+            button.setObjectName("autre")
+            button.setStyleSheet(f"""
+                QPushButton#autre {{
+                    background-color: #fff;
+                    border-radius: {(sizebutton // 2) - 1}px;
+                }}
+                QPushButton#autre:hover {{
+                    background-color: #CCC;
+                }}
+                QPushButton#autre::menu-indicator {{
+                    width: 0;
+                    height: 0;
+                }}
+            """)
 
-                        """)
         return button
     def bottom_part(self):
         bottom_layout = QHBoxLayout()
         bottom_layout.setSpacing(30)
         bottom_layout.setAlignment(Qt.AlignCenter)
         self.rewind_button = self.boutton("./assets/SVG/replay-10.svg")
-        self.play_pause_button = self.boutton("assets/SVG/play_arrow.svg")
-        self.forward_button = self.boutton("assets/SVG/forward-10.svg")
-        self.more_boutton = self.boutton("assets/SVG/more.svg", 4, 30)
+        self.play_pause_button = self.boutton("./assets/SVG/play_arrow.svg")
+        self.forward_button = self.boutton("./assets/SVG/forward-10.svg")
+        self.more_boutton = self.boutton("./assets/SVG/more.svg", 4, 30)
         self.more_boutton.setParent(self)
         self.more_boutton.raise_()
         self.speed_menu = QMenu()

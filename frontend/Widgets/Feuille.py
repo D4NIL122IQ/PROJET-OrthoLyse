@@ -60,7 +60,7 @@ class Feuille(QWidget):
 
         # Titre
         self.title_label = QLabel(self.text_top)
-        self.title_label.setStyleSheet("color: #4C4C4C;")
+        self.title_label.setStyleSheet("color: #017399;")
         self.title_label.setFont(QFont(self.font_family, 14))
         label_layout = QHBoxLayout()
         label_layout.addWidget(self.icon_label)
@@ -82,7 +82,7 @@ class Feuille(QWidget):
         self.text_edit.setReadOnly(True)
         self.text_edit.setFont(QFont(self.font_family,10))
 
-        self.text_edit.setStyleSheet("background-color: #fafafa;color: black; border-radius: 10px;"
+        self.text_edit.setStyleSheet("background-color: rgba(241,253,255,217);color: black; border-radius: 10px;"
                                      "padding-top: 5px;padding-bottom: 5px;padding-left: 10px;padding-right: 10px;")
         self.main_layout.addWidget(self.text_edit)
 
@@ -112,7 +112,7 @@ class Feuille(QWidget):
                 lambda: (self.controller.set_text_transcription(self.text_edit.toPlainText()),
                          self.controller.change_page("Transcription")))
         if self.left_button_text == "Analyser":
-            self.left_boutton.clicked.connect(lambda : self.controller.change_page("Metrique"))
+            self.left_boutton.clicked.connect(lambda: self.controller.change_page("Metrique"))
 
         label_layout = QHBoxLayout()
         label_layout.addStretch(1)

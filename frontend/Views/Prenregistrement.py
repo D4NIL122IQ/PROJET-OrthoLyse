@@ -104,6 +104,7 @@ class Prenregistrement(QWidget):
 
         self.layout.addWidget(self.box)
 
+
     def set_body_elements(self, titleContainer, svgIconPath, action=None):
         widget = QWidget(self)
         widget.setFixedSize(320, round(220 * 0.81))

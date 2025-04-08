@@ -24,7 +24,7 @@ class Header(QWidget):
         self.layout.setContentsMargins(20, 10, 20, 10)
 
         # Charge la police à partir du fichier spécifié
-        self.font, self.font_family = self.controller.set_font('./assets/Fonts/Inter,Montserrat,Roboto/Inter/Inter-VariableFont_opsz,wght.ttf')
+        self.font, self.font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-Medium.ttf')
 
         # Création du QLabel pour le titre
         self.label = QLabel("Ortho<b>Lyse</b>", self)
@@ -55,7 +55,7 @@ class Header(QWidget):
         """
         Change de page pour afficher les paramètres lorsque le bouton des paramètres est cliqué.
         """
-        self.controller.change_page("Settings")
+        self.controller.change_page("Parametres")
 
     def change_page(self):
         """

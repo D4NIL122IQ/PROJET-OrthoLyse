@@ -30,7 +30,7 @@ class HoverSlider(QSlider):
 
             QSlider::sub-page:horizontal {
 
-                background: #000000; /* avant le handle */
+                background: #017399; /* avant le handle */
 
                 border-radius: 1px;
 
@@ -72,7 +72,7 @@ class HoverSlider(QSlider):
 
             QSlider::sub-page:horizontal {
 
-                background: #000000; 
+                background: #017399; 
 
                 border-radius: 1px;
 
