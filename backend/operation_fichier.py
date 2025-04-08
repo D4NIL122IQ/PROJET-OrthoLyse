@@ -1,9 +1,13 @@
 import os
-from pydub import AudioSegment
-from pydub.silence import detect_silence
 from pathlib import Path
 
+#import magic
+from pydub import AudioSegment
+from pydub.silence import detect_nonsilent, detect_silence
+
+
 def file_size_Mo(file_path):
+    """Retourne la taille du fichier en Mo"""
     #getsize retourne la taille en octect 
     # 1Mo = 2^20 octet 
     return os.path.getsize(file_path) / pow(2, 20)
@@ -16,10 +20,12 @@ def reel_file_format(file_path):
 
 
 def file_size_ms(file_path):
+    """Retroune le duree de l'audio en ms"""
     frmt = reel_file_format(file_path)
     return len(AudioSegment.from_file(file_path , format=frmt))
 
 def file_size_sec(file_path):
+    """Retourne la duree de l'audio en seconde"""
     #on charge l'audio dans AudioSegment ...
     #puis on obtient la durée en ms -> / 1000 pour l'obtenir en sec
     frmt = reel_file_format(file_path) 
@@ -56,6 +62,8 @@ def detect_silnce_inInterval(audio):
     # plus la durée est longue plus on est sur que la coupure est plus correcte !!! mais et si il ne ya pas de silence aussi long dans tout l'audio ? 
     return detect_silence(audio, min_silence_len=900, silence_thresh=-40)
 
+    
+
 
 def split_audio(file_path):
     """
@@ -76,10 +84,10 @@ def split_audio(file_path):
     while start < duration:
         t1 = 290000 # init
         t2 = 310000 # init
-        
+        file_number += 1
         listSilence = []
         while(not listSilence):
-            file_number +=1
+            
             s1 = min(duration , start+t1) #debut de l'intarvalle ou on charche le silence
             s2 = min(duration , start+t2) #fin avec un intervalle de 20 seconde
             if(s1 == duration or s2 == duration): #si on atteint la fin de l'audio on a plus besoin de decouper on recupere juste la derniere partie 
@@ -95,8 +103,9 @@ def split_audio(file_path):
         segement = audio[start:end]
         #enregitrement dans le repertoir fileSpliter
         file_dir = os.path.join(output_dir,f'{file_number}.mp3')
+        print(file_dir)
         segement.export(file_dir, format=reel_file_format(file_path))
-        start = end #actualiser le debut pour la prochaine decoupe || fin de decoup 
-        
+        start = end #actualise le debut pour la prochaine decoupe && condition de sortie de while
+    
     #on retourne le nbr de fichier pour pouvoir les parcourir afin de faire de la transcription
     return file_number, output_dir

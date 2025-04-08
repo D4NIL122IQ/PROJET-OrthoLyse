@@ -4,6 +4,10 @@
 import nltk.tokenize as to #type:ignore
 from num2words import num2words
 from nltk.stem.snowball import SnowballStemmer #type:ignore
+import spacy
+
+# Charger un modèle pré-entraîné en français
+
 
 import re 
 import json
@@ -16,10 +20,13 @@ with open(os.path.abspath("../backend/suffixe.json"), 'r', encoding='utf-8') as 
     suffixes = json.load(fichier)
 with open(os.path.abspath("../backend/prefixe.json"), 'r', encoding='utf-8') as fichier:
     prefixes = json.load(fichier)
+
 class Analyse_NLTK:
     
     def __init__(self,text=""):
         self.__text=text
+        self.nlp = spacy.load("fr_core_news_lg")
+        self.doc=None
     
     def __sub_punc(self,text=None):
         """
@@ -33,17 +40,17 @@ class Analyse_NLTK:
         return re.sub(regex," ",text)
 
 
-    def word_size(self):
+    def word_treatment(self):
         """
         retourne le nombre de mot dans le text
         """
-        #text=self.num2words(self.__text)
-        #text=self.__sub_punc(self.num2words(self.__text))
+        #text=self.__num2words(self.__text)
+        #text=self.__sub_punc(self.__num2words(self.__text))
         #print(to.word_tokenize(text))
 
-        return to.word_tokenize(self.__sub_punc(self.num2words(self.__text)))
+        return to.word_tokenize(self.__sub_punc(self.__num2words(self.__text)))
 
-    def num2words(self,chaine):
+    def __num2words(self,chaine):
         # Découper la chaîne en tokens (basé sur les espaces)
         tokens = chaine.split()
         resultat = []
@@ -95,7 +102,7 @@ class Analyse_NLTK:
     
     def mlcu(self):
         #mlcu=nbr word/nbr sents
-        words=self.word_size()
+        words=self.word_treatment()
         sents=self.sent_size()
         calc=len(words)/len(sents)
         if type(calc)==int:
@@ -109,7 +116,7 @@ class Analyse_NLTK:
         !!! note a moi meme peut etre serait t'il pertinent de rajouter une fonction qui calcule le nombre de mot unique avec le lemme de nltk
         !!! pour que avoir et avez sois compter comme un seul mot je doit voir avec les autres
         """
-        words=set(self.word_size())
+        words=set(self.word_treatment())
         print(len(words))
         return len(words)
     
@@ -117,11 +124,11 @@ class Analyse_NLTK:
         """
         sert a decouper les mot pour le morph
         """
-        text=self.__text
+        text=self.__num2words(self.__text)
         regex = r'[-]|[_]|[^\wÀ-ÿ\'\’\s\-"]' #\w équivalent à la classe [a-zA-Z0-9_]. \s équivalent à la classe [ \t\n\r\f\v].
         #la les mots comme pensa-t-elle vaut 1  quelqu'un aussi vaut 1 pour que il vale deux faut raouter \' et \’
         text=re.sub(regex,"",text) #re.sub(pattern, repl, string, count=0, flags=0)
-        #regex = r"[-]|[_]" ici pensa t'elle vaudrais 3
+        regex = r"[-]|[_]" #ici pensa t'elle vaudrais 3
         words=re.sub(regex," ",text)
         return to.word_tokenize(words)
     
@@ -168,8 +175,57 @@ class Analyse_NLTK:
                         break
 
         return word_dict
-        
-        
+
+    def __token_spacy(self):
+
+
+        # Ajouter explicitement le lemmatizer et le tagger à la pipeline si ce n'est pas déjà fait
+        if "ner" in self.nlp.pipe_names:
+            self.nlp.remove_pipe("ner")
+
+        # Processus de texte
+        doc = self.nlp(" ".join(self.word_treatment()))
+
+        self.doc=doc
+
+    def spacy_calc_morphem(self):
+        if (self.doc == None):
+            self.__token_spacy()
+
+        count=[]
+        for token in self.doc:
+            if (token.prefix_!="" or token.suffix_!="") :
+                if (token.prefix_+token.suffix_!=token.text) and (token.prefix_!= token.text) and (token.suffix_!=token.text):
+                    print(f"Mot: {token.text}")
+                    print(f"  - Lemme: {token.lemma_}")  # Lemme (forme de base)
+                    print(f"  - Préfixe: {token.prefix_}")  # Préfixe
+                    print(f"  - Suffixe: {token.suffix_}")  # Suffixe
+                    print(f"  - Morphemes: {token.morph}")  # Informations morphologiques détaillées
+                    print(f"  - POS: {token.pos_}")  # Part of speech (partie du discours)
+                    print("-" * 50)
+                    count.append(f"{token.text} : {token.lemma_} {token.prefix_} {token.suffix_} {token.morph} {token.pos_}")
+        print(len(count))
+        count=[]
+        word_dict=self.morphem()
+        for word, morphemes in word_dict.items():
+            if morphemes["prefixe"] or morphemes["suffixe"] or morphemes["infixe"]:
+                count.append(f"{word} : {morphemes}")
+                print(f"{word} : {morphemes}")
+        print(len(count))
+        #return count
+
+    def calc_lemme(self):
+        if (self.doc==None):
+            self.__token_spacy()
+        spacy_lemme=[token.lemma_ for token in self.doc]
+
+
+        nltk=self.word_treatment()
+        intersection_par_indice = [spacy_lemme[i] for i in range(min(len(spacy_lemme), len(nltk))) if
+                                   spacy_lemme[i] == nltk[i]]
+        intersection_par_mot = set(intersection_par_indice)
+        return len(intersection_par_mot)
+
 
 text="""l'anis
     Lors d’une 105 belle 2024 matinée 2.5 d’été, le soleil brillait haut dans le ciel. Marie, une jeune femme curieuse et passionnée, décidait de partir explorer la forêt qui se trouvait près de chez elle. « Pourquoi ne pas profiter de cette journée ? », pensa-t-elle en préparant son sac à dos.
@@ -185,9 +241,9 @@ Continuant son chemin, elle arriva finalement dans une clairière. Là, au centr
 Sa curiosité prit le dessus. Elle poussa doucement la porte – creeeeeek. À l’intérieur, elle découvrit une pièce remplie d’objets anciens : une lampe à huile, un livre poussiéreux, et une boîte mystérieuse. Alors qu’elle tendait la main pour ouvrir la boîte... un bruit derrière elle la fit sursauter !
 
 """
-phrase = "re-développement  2,5 25 rapidement des entreprises innovantes trottiner"
+phrase = "re-développement 2,5 25 rapidement des entreprise innovantes trottiner"
 
-#print(Analyse_NLTK(phrase).word_size())
+print(Analyse_NLTK(phrase).spacy_calc_morphem())
 
 
 # # dictionair des prefixe
