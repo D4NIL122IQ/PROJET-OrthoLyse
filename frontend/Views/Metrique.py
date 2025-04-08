@@ -13,7 +13,7 @@ class Metrique(QWidget):
         super().__init__()
         self.navController = NavigationController()
         #instanciation du controller qui va s'occuper de faire les calculs
-        self.resultatController = ResultController(transcrip=self.navController.get_text_transcription())
+        self.resultatController = ResultController(transcrip=self.navController.get_text_transcription() , file_path=self.navController.get_file_path())
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.timer = QTimer() #timer qui va nous servir a faire les animation
         self.timer.timeout.connect(self.update_animation)
