@@ -98,10 +98,18 @@ class Analyse_NLTK:
         !!!Suscebtible detre modifier par la suite pour s'adapter au besoin du code
         """
         #print(len(text))
-        return text
-    
+        return len(text)
+
+    def morphem_moy(self):
+        texts = self.__text.splitlines()
+        texts = [element.lstrip() for element in texts if re.match(r"[\S\w]", element.lstrip()) and len(
+            element.lstrip())]  # regex si la chaine commence avec autre que une lettre elle ne sera pas retenu \S verifie que ya pas de tabulation et \w verifie que c'est bien un caracter  !
+
+        for text in texts:
+            pass
+
     def mlcu(self):
-        #mlcu=nbr word/nbr sents
+    #mlcu=nbr word/nbr sents
         words=self.word_treatment()
         sents=self.sent_size()
         calc=len(words)/len(sents)
@@ -109,22 +117,26 @@ class Analyse_NLTK:
             return calc
         else:
             return round(calc,2)
+
     def nbr_unique_word(self):
         """
-        retourne le nombre de mot unique dans le texte ici on prend pas on compte si les mot font partie du meme radicale ou non
-        avoir et avez sera compter comme deux mot different
-        !!! note a moi meme peut etre serait t'il pertinent de rajouter une fonction qui calcule le nombre de mot unique avec le lemme de nltk
-        !!! pour que avoir et avez sois compter comme un seul mot je doit voir avec les autres
+            retourne le nombre de mot unique dans le texte ici on prend pas on compte si les mot font partie du meme radicale ou non
+            avoir et avez sera compter comme deux mot different
+            !!! note a moi meme peut etre serait t'il pertinent de rajouter une fonction qui calcule le nombre de mot unique avec le lemme de nltk
+            !!! pour que avoir et avez sois compter comme un seul mot je doit voir avec les autres
         """
         words=set(self.word_treatment())
         print(len(words))
         return len(words)
-    
-    def __sub_morph(self):
+
+    def __sub_morph(self,text=None):
         """
         sert a decouper les mot pour le morph
         """
-        text=self.__num2words(self.__text)
+        if text:
+            text = self.__num2words(text)
+        else:
+            text=self.__num2words(self.__text)
         regex = r'[-]|[_]|[^\wÀ-ÿ\'\’\s\-"]' #\w équivalent à la classe [a-zA-Z0-9_]. \s équivalent à la classe [ \t\n\r\f\v].
         #la les mots comme pensa-t-elle vaut 1  quelqu'un aussi vaut 1 pour que il vale deux faut raouter \' et \’
         text=re.sub(regex,"",text) #re.sub(pattern, repl, string, count=0, flags=0)
@@ -132,11 +144,11 @@ class Analyse_NLTK:
         words=re.sub(regex," ",text)
         return to.word_tokenize(words)
     
-    def morphem(self):
+    def morphem(self,text=None):
         """
         retourne un dictionnaire pour chaque mot du text avec trois valeur prefixe infixe et suffixe qui sont de bool
         """
-        words=self.__sub_morph()
+        words=self.__sub_morph(text)
         words=set(words)
         word_dict={}
         stemmer = SnowballStemmer("french")
@@ -146,11 +158,12 @@ class Analyse_NLTK:
                 "infixe":False,
                 "suffixe":False
             }
+            if word and word[0] in prefixes:
 
-            for prefix in prefixes[word[0]]:
-                if word.startswith(prefix) and len(word)!=len(prefix):
-                    word_dict[word]["prefixe"]=True
-                    break
+                for prefix in prefixes[word[0]]:
+                    if word.startswith(prefix) and len(word)!=len(prefix):
+                        word_dict[word]["prefixe"]=True
+                        break
             
             stem=stemmer.stem(word)
             word_suffixe= word.replace(stem, "")
@@ -160,7 +173,7 @@ class Analyse_NLTK:
                 et le suffixe serait ment mais la on a lement donce on doit retirer lettre par lettre jusqua trouver le suffixe le n'est pas un suffixe mais et rajouter car c'est un element de la langue pour donner du sens au mot pour l'orthographe consisutionelment seerait faux
                 """
 
-                if word.endswith(tuple(suffixes[word_suffixe[0]])):  # Convertir la liste en tuple pour que endswith fonctionne
+                if word_suffixe[0] in suffixes and word.endswith(tuple(suffixes[word_suffixe[0]])):  # Convertir la liste en tuple pour que endswith fonctionne
                     word_dict[word]["suffixe"]=True
                     break
                 word_suffixe=word_suffixe[1:]
@@ -173,8 +186,12 @@ class Analyse_NLTK:
                     if stem.endswith(suf) and len(stem)!=len(suf) and (len(stem)-len(suf))>1 and len(suf)>1:
                         word_dict[word]["infixe"]=True
                         break
+        nbr_morphem=0
+        for word in word_dict.values():
+            if word["infixe"]==True or word["suffixe"]==True or word["prefixe"]==True:
+               nbr_morphem+=1
 
-        return word_dict
+        return nbr_morphem
 
     def __token_spacy(self):
 
@@ -212,7 +229,7 @@ class Analyse_NLTK:
                 count.append(f"{word} : {morphemes}")
                 print(f"{word} : {morphemes}")
         print(len(count))
-        #return count
+        return count
 
     def calc_lemme(self):
         if (self.doc==None):
@@ -242,8 +259,8 @@ Sa curiosité prit le dessus. Elle poussa doucement la porte – creeeeeek. À l
 
 """
 phrase = "re-développement 2,5 25 rapidement des entreprise innovantes trottiner"
-
-print(Analyse_NLTK(phrase).spacy_calc_morphem())
+phrase2 = "Bonjour, ceci est un audio de 5 secondes pour tester whisper"
+print(Analyse_NLTK(phrase2).morphem())
 
 
 # # dictionair des prefixe
