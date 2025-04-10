@@ -195,3 +195,4 @@ class Prenregistrement(QWidget):
 
     def stop_enregistrement(self):
         self.controller.change_page("StopEnregistrer")
+        

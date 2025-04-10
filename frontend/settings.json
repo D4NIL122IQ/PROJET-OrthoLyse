@@ -1,14 +1,16 @@
 {
+    "numero" : 0,
     "modelWhisper": 0,
     "is_micro_activate": false,
     "path_save_audio": "",
+    "path_save_result": "",
     "ratio_metrique": {
-        "duree": 10,
-        "nbrMot": 23,
-        "motDif": 3,
-        "nbrEnonce": 4,
-        "morpheme": 5,
-        "morphemeEnonce": 4,
-        "lemme": 3
+        "duree": 23,
+        "nbrMot": 2,
+        "motDif": 2,
+        "nbrEnonce": 2,
+        "morpheme": 1,
+        "morphemeEnonce": 1,
+        "lemme": 1
     }
 }

@@ -67,6 +67,7 @@ class StopEnregistrement(Prenregistrement):
         self.layout.addWidget(self.box)
 
     def lunch_principal(self):
+        self.controller.set_file_transcription_path("")
         self.controller.change_page("Prenregistrer")
 
     @override
