@@ -40,10 +40,10 @@ def exporte_csv_row(chemin, data):
     """
     with open(chemin, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        
+
         # Écrit l'en-tête : les clés du dictionnaire
         writer.writerow(data.keys())
-        
+
         values = [v if isinstance(v, list) else [v] for v in data.values()] #pour transformer tout les element en liste
 
         # Transposer les colonnes en lignes
@@ -78,7 +78,7 @@ def exporte_docx(chemin, data):
 
     for cle, valeur in data.items():
         doc.add_paragraph(f"{cle}: {valeur}")
-    
+
     doc.save(chemin)
     #print(f"Données exportées en DOCX : {chemin}")
 
@@ -90,10 +90,11 @@ data = {
         "ville": "Paris"
     }
 
-exporte_json("data.json", data)
-exporte_txt("data.txt", data)
-exporte_csv_column("datac.csv", data)
-exporte_csv_row("datar.csv", data)
 
-exporte_pdf("data.pdf", data)
-exporte_docx("data.docx", data)
+#exporte_json("data.json", data)
+#exporte_txt("data.txt", data)
+#exporte_csv_column("datac.csv", data)
+#exporte_csv_row("datar.csv", data)
+
+#exporte_pdf("data.pdf", data)
+#exporte_docx("data.docx", data)
