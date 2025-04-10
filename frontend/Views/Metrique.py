@@ -202,7 +202,7 @@ class Metrique(QWidget):
         menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
 
     def export_as_pdf(self):
-        print("Exporter en PDF")
+        self.resultatController.export_pdf()
 
     def export_as_docx(self):
-        print("Exporter en DOCX")
+        self.resultatController.export_docx()
