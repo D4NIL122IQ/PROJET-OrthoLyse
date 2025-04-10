@@ -13,7 +13,9 @@ class Metrique(QWidget):
         super().__init__()
         self.navController = NavigationController()
         #instanciation du controller qui va s'occuper de faire les calculs
-        self.resultatController = ResultController(transcrip=self.navController.get_text_transcription() , file_path=self.navController.get_file_path())
+        tx = self.navController.get_text_transcription()
+        fp = self.navController.get_file_transcription_path()
+        self.resultatController = ResultController(transcrip=tx , file_path=fp)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.timer = QTimer() #timer qui va nous servir a faire les animation
         self.timer.timeout.connect(self.update_animation)
@@ -32,12 +34,12 @@ class Metrique(QWidget):
     def container(self):
         """met en place une grille qui contient les resultats"""
         metrique = [
-            {"label": "Mots", "getter": self.resultatController.get_word},
-            {"label": "Mots différents", "getter": self.resultatController.get_dif_word},
-            {"label": "Énoncés", "getter": self.resultatController.get_enonce},
-            {"label": "Morphemes", "getter": self.resultatController.get_morpheme},
-            {"label": "Morphemes/énoncé", "getter": self.resultatController.get_morpheme_enonce},
-            {"label": "Lemmes", "getter": self.resultatController.get_lemme}
+            {"label": "Mots", "getter": lambda: self.resultatController.get_word()},
+            {"label": "Mots différents", "getter":lambda : self.resultatController.get_dif_word()},
+            {"label": "Énoncés", "getter":lambda : self.resultatController.get_enonce()},
+            {"label": "Morphemes", "getter":lambda : self.resultatController.get_morpheme()},
+            {"label": "Morphemes/énoncé", "getter":lambda : self.resultatController.get_morpheme_enonce()},
+            {"label": "Lemmes", "getter":lambda : self.resultatController.get_lemme()}
         ]
         #ce layout nous permet d'avoir une matrice afin de placer les cartes dedans
         grid = QGridLayout()
@@ -104,8 +106,8 @@ class Metrique(QWidget):
         svg_widget = QSvgWidget()
         svg_widget.setFixedSize(150, 130)
 
-        value = 100 if opt["getter"]() >= 100 else opt["getter"]()
-        self.animated_widgets.append((svg_widget, value, 0))
+        value = opt["getter"]()
+        self.animated_widgets.append((svg_widget, value[1], 0))
 
         box.addWidget(svg_widget, alignment=Qt.AlignCenter)
         box.addLayout(self.set_bottomCard(opt))
@@ -116,7 +118,7 @@ class Metrique(QWidget):
 
     def set_bottomCard(self, info):
         hBox = QVBoxLayout()
-        label = QLabel(f' {info["getter"]()} {info["label"]}')
+        label = QLabel(f' {info["getter"]()[0]} {info["label"]}')
         label.setStyleSheet("color: #4c4c4c; background-color: transparent")
         label.setWordWrap(True)
         label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
