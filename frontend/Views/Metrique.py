@@ -131,18 +131,28 @@ class Metrique(QWidget):
     def update_animation(self):
         all_finished = True
         for i, (svg_widget, target_value, current_value) in enumerate(self.animated_widgets):
-            if current_value < target_value:
+            display_value = current_value
+
+            if current_value < min(target_value, 100):
                 current_value += 1
+                display_value = current_value
                 all_finished = False
-            elif current_value > target_value:
+            elif current_value > min(target_value, 100):
                 current_value -= 1
+                display_value = current_value
                 all_finished = False
+            elif current_value == 100 and target_value > 100:
+                display_value = target_value  # Affiche directement 150 par exemple
+
             self.animated_widgets[i] = (svg_widget, target_value, current_value)
-            self.update_svg(svg_widget, current_value)
+            self.update_svg(svg_widget, display_value)
+
         if all_finished:
             self.timer.stop()
 
     def update_svg(self, svg_widget, value):
+        percentage = int(value)
+        value = min(value, 100)
         angle = 180 - (value * 1.8)
         rad = math.radians(angle)
         needle_length = 40
@@ -154,28 +164,26 @@ class Metrique(QWidget):
         arrow_x2 = needle_x + arrow_size * math.cos(rad + math.radians(135))
         arrow_y2 = needle_y - arrow_size * math.sin(rad + math.radians(135))
 
-        # Calcul du pourcentage à afficher sous l'aiguille
-        percentage = int(value)
-
         svg_template = f'''
-        <svg width="130" height="130" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="red"/>
-                    <stop offset="50%" stop-color="orange"/>
-                    <stop offset="100%" stop-color="green"/>
-                </linearGradient>
-            </defs>
-            <path d="M 25 100 A 40 40 0 1 1 125 100" fill="none" stroke="url(#gradient)" stroke-width="15" stroke-linecap="round"/>
-            <line x1="75" y1="100" x2="{needle_x}" y2="{needle_y}" stroke="black" stroke-width="3"/>
-            <polygon points="{needle_x},{needle_y} {arrow_x1},{arrow_y1} {arrow_x2},{arrow_y2}" fill="black"/>
-            <circle cx="75" cy="100" r="5" fill="black"/>
+           <svg width="130" height="130" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+               <defs>
+                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                       <stop offset="0%" stop-color="red"/>
+                       <stop offset="50%" stop-color="orange"/>
+                       <stop offset="100%" stop-color="green"/>
+                   </linearGradient>
+               </defs>
+               <path d="M 25 100 A 40 40 0 1 1 125 100" fill="none" stroke="url(#gradient)" stroke-width="15" stroke-linecap="round"/>
+               <line x1="75" y1="100" x2="{needle_x}" y2="{needle_y}" stroke="black" stroke-width="3"/>
+               <polygon points="{needle_x},{needle_y} {arrow_x1},{arrow_y1} {arrow_x2},{arrow_y2}" fill="black"/>
+               <circle cx="75" cy="100" r="5" fill="black"/>
 
-            <!-- Ajout du texte pourcentage en dessous de l'aiguille -->
-            <text x="75" y="130" font-size="12" text-anchor="middle" fill="black">{percentage} %</text>
-        </svg>
-        '''
+               <!-- Ajout du texte pourcentage en dessous de l'aiguille -->
+               <text x="75" y="130" font-size="12" text-anchor="middle" fill="black">{percentage} %</text>
+           </svg>
+           '''
         svg_widget.load(bytearray(svg_template, encoding='utf-8'))
+
 
     def return_home(self):
         self.navController.change_page("Home")
