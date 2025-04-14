@@ -97,4 +97,4 @@ data = {
 #exporte_csv_row("datar.csv", data)
 
 #exporte_pdf("data.pdf", data)
-#exporte_docx("data.docx", data)
+# exporte_docx("data.docx", data)
