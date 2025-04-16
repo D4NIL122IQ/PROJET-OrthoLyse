@@ -4,7 +4,7 @@ import sys
 
 from PySide6.QtGui import QFontDatabase, QFont
 
-from backend.transcription import ajuster_mapping, transcription,custom_tokenize
+from backend.transcription import ajuster_mapping, transcription, custom_tokenize
 from frontend.Views.CorrectionTranscription import CorrectionTranscription
 from frontend.Views.Transcription import Transcription
 
@@ -17,13 +17,15 @@ class NavigationController:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(NavigationController, cls).__new__(cls)
-            cls._instance.main_window = None  # RÃ©fÃ©rence Ã  MainWindow
-            cls._instance.central_widget = None  # RÃ©fÃ©rence au QStackedWidget
+            cls._instance.main_window = None  #référence  MainWindow
+            cls._instance.central_widget = None  # référence au QStackedWidget
+            cls._instance.history = []
             cls._instance.position=None
             cls._instance.file_transcription_path = (
                 None  # RÃ©fÃ©rence au QStackedWidget
             )
             cls._instance.text_transcription = None  # RÃ©fÃ©rence au QStackedWidget
+            cls._instance.transcription_canceled = False
 
         return cls._instance
 
@@ -40,6 +42,13 @@ class NavigationController:
             self.main_window.menu.show()
 
     def change_page(self, page_name):
+
+        current_widget = self.central_widget.currentWidget()#recupere le
+
+        # Toujours ajouter la page actuelle à l'historique
+        if current_widget:
+            self.history.append(current_widget)
+
         """Affiche la page indiquée en créant le widget dynamiquement si nécessaire et en important le module à la demande."""
         # Dictionnaire associant le nom de la page à un tuple :
         # (nom_attribut, module_path, class_name, [instanciation])
@@ -98,6 +107,7 @@ class NavigationController:
         else:
             # Pour les autres pages, on crée le widget s'il n'existe pas déjà
             widget = getattr(self.main_window, attr_name, None)
+
             if widget is None:
                 # Import dynamique du module et création du widget
                 module = importlib.import_module(entry[1])
@@ -106,6 +116,26 @@ class NavigationController:
                 setattr(self.main_window, attr_name, widget)
                 self.central_widget.addWidget(widget)
             self.central_widget.setCurrentWidget(widget)
+
+    def print_all_widgets(self):
+        # Itérer sur tous les indices et afficher chaque widget
+
+        print(f"Il y a  widgets dans le QStackedWidget :")
+
+        for i in range(self.central_widget.count()):
+            widget = self.central_widget.widget(i)
+            print(f"Widget {i + 1}: {widget}")
+
+    def remove_page(self, widget):
+        self.print_all_widgets()
+        if widget is not None:
+
+            self.central_widget.removeWidget(widget)
+            setattr(self.main_window, "ImporterAudio", None)
+
+            widget.deleteLater()  # Nettoyage mémoire
+        self.print_all_widgets()
+
 
     def _create_with_params(self, module_path, class_name, *args):
         """Importe dynamiquement le module et crée une instance de la classe avec des arguments."""
@@ -126,6 +156,7 @@ class NavigationController:
         return self.play
 
     def set_file_transcription_path(self, file_path):
+        self.set_audio_player(None) #si le path change donc ont doit supprimer l'instance de audio player ausssi
         self.file_transcription_path = file_path
 
     def get_file_transcription_path(self):
@@ -156,15 +187,27 @@ class NavigationController:
         return font, font_family
         # Ajouter d'autres conditions pour d'autres pages si nÃ©cessaire
 
-    def change_text(self,text):
+    def change_text(self, text):
         if (text != self.text_transcription):
             if (len(self.first_mapping_data) == len(custom_tokenize(text))):
-                self.mapping_data =ajuster_mapping(self.text_transcription,text,self.first_mapping_data)
+                self.mapping_data = ajuster_mapping(self.text_transcription, text, self.first_mapping_data)
             else:
 
-                self.mapping_data =ajuster_mapping(self.text_transcription,text,self.mapping_data)
+                self.mapping_data = ajuster_mapping(self.text_transcription, text, self.mapping_data)
             self.set_text_transcription(text)
 
     def set_first_mapping(self,mapping):
         self.first_mapping_data = mapping
 
+    def set_first_text_transcription(self,text):
+        self.first_text_transcription = text
+
+    def get_first_text_transcription(self):
+        return self.first_text_transcription
+
+    def get_first_mapping(self):
+        return self.first_mapping_data
+    def go_to_previous_page(self):
+        if self.history:
+            previous_widget = self.history.pop()
+            self.central_widget.setCurrentWidget(previous_widget)

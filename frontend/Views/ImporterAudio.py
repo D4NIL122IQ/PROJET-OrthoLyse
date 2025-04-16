@@ -104,7 +104,7 @@ class ImporterAudio(QWidget):
         self.right_boutton=self.boutton(self.box, "Transcrire", "#FFFFFF", "#B3B3B3", "#B5B5B5")
         self.left_boutton=self.boutton( self.box,"Annuler","#15B5D4","#15B5D4","#FFFFFF")
 
-        self.left_boutton.clicked.connect(self.page_mode)
+        self.left_boutton.clicked.connect(lambda: NavigationController()._instance.go_to_previous_page())
         layoutH.setSpacing(10)
         layoutH.addWidget(self.left_boutton)
         layoutH.addWidget(self.right_boutton)
@@ -114,7 +114,9 @@ class ImporterAudio(QWidget):
         self.layout.addWidget(self.box)
 
     def page_mode(self):
+
         self.controller.change_page("ModeDeChargement")
+        print("self,",self)
 
     def boutton(self, parent=None, text="Boutton", color_text="#FFFFFF", color_br="#B3B3B3", color_bg="#B5B5B5"):
         # Créer le QPushButton
@@ -259,12 +261,26 @@ class ImporterAudio(QWidget):
     def back_exe(self):
         # Récupérer le chemin du fichier audio actuellement sélectionné
         current_file = self.controller.get_file_transcription_path()
+        self.left_boutton.clicked.disconnect()
+        self.left_boutton.setCursor(Qt.ForbiddenCursor)
 
+        self.left_boutton.setStyleSheet(f"""
+                QPushButton#an {{
+                    background-color: #F00;
+                    border-radius: 10px;
+                    border: 2px solid #007299;
+                    
+                }}
+            """)
         # Si une transcription est déjà en cours, on ne fait rien
 
 
         # Si le fichier n'a pas changé depuis la dernière transcription, on ne relance pas
-        if hasattr(self, "last_file_path") and self.last_file_path == current_file:
+        if  (hasattr(self, "last_file_path")):
+            if (self.last_file_path == current_file):
+                self.controller.set_text_transcription(self.controller.get_first_text_transcription())
+                self.controller.set_mapping_data(self.controller.get_first_mapping())
+                self.controller.change_page("Transcription")
             print("Le fichier audio n'a pas changé.")
             return
 
@@ -279,6 +295,16 @@ class ImporterAudio(QWidget):
         def on_transcription_finished():
             self.transcription_in_progress = False
             self.controller.change_page("Transcription")
+            self.left_boutton.setStyleSheet(f"""
+                            QPushButton#an {{
+                                background-color: #FFF;
+                                border-radius: 10px;
+                                border: 2px solid #007299;
+
+                            }}
+                        """)
+            self.left_boutton.clicked.connect(self.page_mode)
+            self.left_boutton.setCursor(Qt.PointingHandCursor)
 
         # Connecter le signal "fin" à la fonction de fin
         runnable.signals.fin.connect(on_transcription_finished)
@@ -495,6 +521,7 @@ class TranscriptionRunnable(QRunnable):
 
         # Mise à jour de l'interface utilisateur
         self.controller.set_text_transcription(result["text"])
+        self.controller.set_first_text_transcription(result["text"])
         self.controller.set_mapping_data(result["mapping"])
         self.controller.set_first_mapping(result["mapping"])
         # Remet le curseur à son état normal une fois le traitement terminé
