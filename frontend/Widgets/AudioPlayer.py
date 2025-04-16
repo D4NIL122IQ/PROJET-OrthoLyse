@@ -47,6 +47,20 @@ class AudioPlayer(QWidget):
         self.rewind_button.clicked.connect(self.rewind_10s)
         self.forward_button.clicked.connect(self.forward_10s)
 
+    def set_file_path(self,path):
+        self.path = path
+
+    def reload_audio(self):
+        """Cette fonction permet de recharger l'audio player """
+        #QMediaPlayer garde dans le cache le premier audio chargé malgré le fait qu'on a changer de fichier
+        self.player.stop()  # Stop pour forcer un reset
+        self.player.setSource(QUrl.fromLocalFile(self.path))  # Recharge la source
+        self.slider.setValue(0)
+        self.left_time_label.setText("00:00")
+        self.right_time_label.setText("00:00")
+        self.is_playing = False
+        self.play_pause_button.setIcon(QIcon("./assets/SVG/play_arrow.svg"))
+
     def check(self):
         if self.controller.get_play_pause():
             self.toggle_play_pause()
@@ -63,9 +77,6 @@ class AudioPlayer(QWidget):
             self.controller.set_play_pause(False)
 
         self.is_playing = not self.is_playing
-
-
-
 
     def rewind_10s(self):
         self.player.setPosition(max(self.player.position() - 10000, 0))
