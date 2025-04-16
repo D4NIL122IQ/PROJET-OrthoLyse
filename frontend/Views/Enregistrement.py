@@ -6,13 +6,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QHBoxLayout,
-    QLineEdit,
-    QPushButton,
 )
 from frontend.Views.Prenregistrement import Prenregistrement
 from frontend.controllers.Record_controllers import RecordeController
-
-# classe mere des deux autres classes enregistrement et ecoute
+from frontend.Widgets.AudioBar import AudioBar
 
 class Enregistrement(Prenregistrement):
     def __init__(self):
@@ -23,7 +20,9 @@ class Enregistrement(Prenregistrement):
     def showEvent(self, event):
         """ Cet event permet de lancer l'enregistrement une fois la page charger"""
         super().showEvent(event)
-        self.recController.start_recording()
+        # connecter ici si pas déjà fait
+        self.recController.start_recording(self.audioBar)
+
 
     def container(self):
         self.box = QWidget(self)
@@ -56,8 +55,8 @@ class Enregistrement(Prenregistrement):
         layoutV.setContentsMargins(0, 0, 0, 0)
         layoutV.setSpacing(0)
 
-        self.layoutPrincipal = super().set_body_elements(
-                "En cours d'enregistrement ...", "./assets/SVG/ongoing.svg")
+        self.layoutPrincipal = self.set_body_elements(
+                "En cours d'enregistrement ...")
 
         layoutV.addLayout(self.layoutPrincipal)
         layoutV.addLayout(super().controlBtn(self.listBtnOpt))
@@ -70,5 +69,39 @@ class Enregistrement(Prenregistrement):
 
     def stop_enregistrement(self):
         self.recController.stop_recording()
+        self.controller.set_file_transcription_path(self.recController.get_final_file_path())
         self.controller.change_page("StopEnregistrer")
 
+
+    def set_body_elements(self, titleContainer,  *args, **kwargs):
+        widget = QWidget(self)
+        widget.setFixedSize(320, round(220 * 0.81))
+        widget.setStyleSheet(
+            """
+            border: 2px dashed #00BCD4;
+            border-radius: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+        """
+        )
+
+        layout = QVBoxLayout(widget)
+        label = self.set_text(titleContainer)
+
+        self.audioBar = AudioBar(bar_count=15)
+        layoutH = QHBoxLayout()
+        layoutH.setContentsMargins(0, 0, 0, 0)
+        layoutH.setSpacing(0)
+        layoutH.addStretch(1)
+        layoutH.addWidget(self.audioBar)
+        layoutH.addStretch(1)
+
+        layout.addWidget(label)
+        layout.addLayout(layoutH)
+        widget.setLayout(layout)
+
+        layoutContain = QHBoxLayout()
+        layoutContain.addStretch(1)
+        layoutContain.addWidget(widget)
+        layoutContain.addStretch(1)
+
+        return layoutContain

@@ -1,18 +1,14 @@
 from typing import override
 
-from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtCore import Qt, QEvent, QSize, Signal, QObject
+from PySide6.QtCore import Qt, Signal, QObject
 from PySide6.QtWidgets import (
     QWidget,
-    QSizePolicy,
     QVBoxLayout,
-    QLabel,
     QHBoxLayout,
-    QLineEdit,
-    QPushButton,
 )
 from PySide6.QtCore import QRunnable, QThreadPool
-
+import os
+import time
 from frontend.Views.Enregistrement import Prenregistrement
 from frontend.Widgets.AudioPlayer import AudioPlayer
 from backend.transcription import transcription
@@ -25,6 +21,14 @@ class StopEnregistrement(Prenregistrement):
         super().__init__()  # utilisation du constructeur du parent sans modification
 
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        #lorsque on recharge la vue faut mettre a jour le chemin du nouveau fichier audio
+        self.audio_filename = self.controller.get_file_transcription_path()
+        self.audio_player.set_file_path(self.audio_filename)
+        self.audio_player.reload_audio()    # la on recharge le player audio
+        self.controller.set_audio_player(self.audio_player)
+
     def container(self):
         self.box = QWidget(self)
         self.box.setMinimumSize(520, round(520 * 0.68))
@@ -36,7 +40,6 @@ class StopEnregistrement(Prenregistrement):
             border-bottom-right-radius: 10px;
         """
         )
-        self.controller.set_file_transcription_path(self.audio_filename)
         self.listBtnOpt = [
             {
                 "svg": "./assets/SVG/cancel.svg",
@@ -52,7 +55,7 @@ class StopEnregistrement(Prenregistrement):
             }
         ]
 
-        self.audio_player = AudioPlayer(self.audio_filename)
+        self.audio_player = AudioPlayer(self.controller.get_file_transcription_path())
         self.controller.set_audio_player(self.audio_player)
 
         layoutV = QVBoxLayout(self.box)
@@ -67,7 +70,16 @@ class StopEnregistrement(Prenregistrement):
         self.layout.addWidget(self.box)
 
     def lunch_principal(self):
+        self.controller.set_play_pause()
         self.controller.set_file_transcription_path("")
+        if os.path.exists(self.audio_filename):
+            os.remove(self.audio_filename)
+        while os.path.exists(self.audio_filename):
+            print("En attente de la suppression du fichier...")
+            time.sleep(1)
+
+        print("fichier sup")
+        self.close()
         self.controller.change_page("Prenregistrer")
 
     @override
