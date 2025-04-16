@@ -32,18 +32,9 @@ class Header(QWidget):
         self.label.setStyleSheet(f"color: black; font-family: {self.font_family};"
                                  f"font-size: larger")
 
-        # Création du bouton des paramètres
-        self.btn_settings = QPushButton("")
-        self.btn_settings.setIcon(QIcon(QPixmap("./assets/SVG/settings.svg")))
-        self.btn_settings.setStyleSheet("border:0px;")
-        self.btn_settings.setIconSize(QSize(32, 32))
-        self.btn_settings.setCursor(Qt.PointingHandCursor)
 
-        # Connecte le bouton aux paramètres
-        self.btn_settings.clicked.connect(self.show_settings)
 
         # Ajoute les éléments au layout
-        self.layout.addWidget(self.btn_settings)
         self.layout.addStretch(1)
         self.layout.addWidget(self.label)
         self.setLayout(self.layout)

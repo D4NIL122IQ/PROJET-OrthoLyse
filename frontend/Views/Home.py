@@ -121,12 +121,12 @@ class Home(QWidget):
         layoutH = QHBoxLayout()  # Layout horizontal pour l'icône + texte
 
         # Charger et redimensionner l'icône
-        pixmap = QPixmap("./assets/SVG/info.svg")
-        iconInfo = QIcon(pixmap)
+
+        iconInfo = QIcon("./assets/SVG/infoIcon.svg")
 
         info_btn = QPushButton()
         info_btn.setIcon(iconInfo)
-        info_btn.setIconSize(QSize(38, 38))
+        info_btn.setIconSize(QSize(25, 25))
         info_btn.setStyleSheet("color:#007299;border: 0px;")
         info_btn.setCursor(Qt.PointingHandCursor)
         info_btn.clicked.connect(self.view_info)
