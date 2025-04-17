@@ -1,13 +1,11 @@
-import os
-import sys
-
-from PySide6.QtCore import QUrl, Qt, Signal
+from PySide6.QtCore import QUrl, Qt, Signal, QTimer
 from PySide6.QtGui import QFontDatabase, QFont, QIcon
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QSlider, QPushButton, QSizePolicy, QLabel, QMenu
 )
+import time
 from frontend.Widgets.HoverSlider import HoverSlider
 
 
@@ -49,10 +47,17 @@ class AudioPlayer(QWidget):
         self.path = path
 
     def reload_audio(self):
-        """Cette fonction permet de recharger l'audio player """
-        # QMediaPlayer garde dans le cache le premier audio chargé malgré le fait qu'on a changer de fichier
-        self.player.stop()  # Stop pour forcer un reset
-        self.player.setSource(QUrl.fromLocalFile(self.path))  # Recharge la source
+        """Recharge le fichier audio, même s'il porte le même nom"""
+        self.player.stop()
+
+        # Cache-busting : forcer Qt à croire que c’est un nouveau fichier
+        cache_bust_path = self.path + f"?v={int(time.time())}"
+
+        # Nettoyage du QMediaPlayer en réinitialisant d’abord la source
+        self.player.setSource(QUrl())  # Remet à zéro pour forcer une vraie relecture
+
+        # Délai très court pour laisser le temps de reset la source avant de recharger
+        QTimer.singleShot(50, lambda: self.player.setSource(QUrl.fromLocalFile(self.path)))
 
     def release_resources(self):
         if self.player:

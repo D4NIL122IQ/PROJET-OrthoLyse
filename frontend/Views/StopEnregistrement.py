@@ -71,16 +71,6 @@ class StopEnregistrement(BaseEnregistrement):
 
         self.layout.addWidget(self.box)
 
-    def lunch_principal(self):
-        self.controller.set_play_pause(play=False)
-        self.controller.set_file_transcription_path("")
-        #self.audio_player = None
-        if os.path.exists(self.audio_filename):
-            os.remove(self.audio_filename)
-
-        self.close()
-        self.controller.change_page("Prenregistrer")
-
     @override
     # surcharge d'une methode de la classe parente car dans cette classe on a pas besoin de placer un bouton
     def set_body_elements(self, titleContainer, *args, **kwargs):
@@ -122,6 +112,15 @@ class StopEnregistrement(BaseEnregistrement):
         return layoutContain
 
 
+    def lunch_principal(self):
+        self.controller.set_play_pause(play=False)
+        self.controller.set_file_transcription_path("")
+        #self.audio_player = None
+        if os.path.exists(self.audio_filename):
+            os.remove(self.audio_filename)
+
+        self.close()
+        self.controller.change_page("Prenregistrer")
 
 
     def back_exe(self):
