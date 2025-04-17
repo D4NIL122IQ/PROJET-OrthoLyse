@@ -8,10 +8,11 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 from frontend.Views.Prenregistrement import Prenregistrement
+from frontend.Views.base.base_enregistrement import BaseEnregistrement
 from frontend.controllers.Record_controllers import RecordeController
 from frontend.Widgets.AudioBar import AudioBar
 
-class Enregistrement(Prenregistrement):
+class Enregistrement(BaseEnregistrement):
     def __init__(self):
         super().__init__() # utilisation du constructeur du parent sans modification
         self.recController = RecordeController(self.audio_filename)
@@ -22,6 +23,7 @@ class Enregistrement(Prenregistrement):
         super().showEvent(event)
         # connecter ici si pas déjà fait
         self.recController.start_recording(self.audioBar)
+        self.audioBar.start_timer()
 
 
     def container(self):
@@ -63,16 +65,6 @@ class Enregistrement(Prenregistrement):
 
         self.layout.addWidget(self.box)
 
-    def lunch_principal(self):
-        self.recController.stop_recording(sv=False)
-        self.controller.change_page("Prenregistrer")
-
-    def stop_enregistrement(self):
-        self.recController.stop_recording()
-        self.controller.set_file_transcription_path(self.recController.get_final_file_path())
-        self.controller.change_page("StopEnregistrer")
-
-
     def set_body_elements(self, titleContainer,  *args, **kwargs):
         widget = QWidget(self)
         widget.setFixedSize(320, round(220 * 0.81))
@@ -87,7 +79,7 @@ class Enregistrement(Prenregistrement):
         layout = QVBoxLayout(widget)
         label = self.set_text(titleContainer)
 
-        self.audioBar = AudioBar(bar_count=15)
+        self.audioBar = AudioBar()
         layoutH = QHBoxLayout()
         layoutH.setContentsMargins(0, 0, 0, 0)
         layoutH.setSpacing(0)
@@ -105,3 +97,19 @@ class Enregistrement(Prenregistrement):
         layoutContain.addStretch(1)
 
         return layoutContain
+
+
+    def lunch_principal(self):
+        self.recController.stop_recording(sv=False)
+        self.audioBar.stop_timer()
+        self.controller.change_page("Prenregistrer")
+
+    def stop_enregistrement(self):
+        self.audioBar.stop_timer()
+        if self.recController.stop_recording() == True:
+            self.controller.set_file_transcription_path(self.recController.get_final_file_path())
+            self.controller.change_page("StopEnregistrer")
+        else:
+            self.controller.change_page("Prenregistrer")
+
+

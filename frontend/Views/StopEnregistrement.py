@@ -9,14 +9,16 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QRunnable, QThreadPool
 import os
 import time
+
 from frontend.Views.Enregistrement import Prenregistrement
+from frontend.Views.base.base_enregistrement import BaseEnregistrement
 from frontend.Widgets.AudioPlayer import AudioPlayer
 from backend.transcription import transcription
 
 
 # classe mere des deux autres classes enregistrement et ecoute
 
-class StopEnregistrement(Prenregistrement):
+class StopEnregistrement(BaseEnregistrement):
     def __init__(self):
         super().__init__()  # utilisation du constructeur du parent sans modification
 
@@ -70,15 +72,12 @@ class StopEnregistrement(Prenregistrement):
         self.layout.addWidget(self.box)
 
     def lunch_principal(self):
-        self.controller.set_play_pause()
+        self.controller.set_play_pause(play=False)
         self.controller.set_file_transcription_path("")
+        #self.audio_player = None
         if os.path.exists(self.audio_filename):
             os.remove(self.audio_filename)
-        while os.path.exists(self.audio_filename):
-            print("En attente de la suppression du fichier...")
-            time.sleep(1)
 
-        print("fichier sup")
         self.close()
         self.controller.change_page("Prenregistrer")
 

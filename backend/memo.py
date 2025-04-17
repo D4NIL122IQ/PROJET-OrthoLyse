@@ -117,11 +117,7 @@ class Memo(QObject):
 
                 if not filename:
                     # L'utilisateur a annulé → on l'avertit
-                    msg = QMessageBox()
-                    msg.setWindowTitle("Emplacement requis")
-                    msg.setText("Vous devez choisir un chemin pour enregistrer le fichier audio.")
-                    msg.setIcon(QMessageBox.Warning)
-                    msg.exec()
+                    return False
 
             # Vérifie si l'extension .wav est bien là, sinon on l’ajoute
             if not filename.lower().endswith(".wav"):
@@ -134,16 +130,15 @@ class Memo(QObject):
                 wf.setframerate(self.RATE)
                 wf.writeframes(b"".join(self.frames))
 
+            return True
+
     def terminate(self,save):
         """Force la libération de toutes les ressources"""
         try:
             if self.recording_event.is_set():
-                self.stop(save=save)
+                sauvgarde_reussi = self.stop(save=save)
         except Exception as e:
             print(f"Erreur lors du terminate() : {e}")
-
-
-
 
         if self.stream:
             try:
@@ -164,5 +159,6 @@ class Memo(QObject):
         self.frames = []
         self.recording_event.clear()
 
-
         print(f"Fichier audio enregistré : {self.WAVE_OUTPUT_FILENAME}")
+
+        return sauvgarde_reussi

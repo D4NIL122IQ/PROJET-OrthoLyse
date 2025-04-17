@@ -12,30 +12,28 @@ from frontend.Widgets.HoverSlider import HoverSlider
 
 
 class AudioPlayer(QWidget):
-
     position_en_secondes = Signal(float)
 
-    def __init__(self,path=None,play=False,current=0):
+    def __init__(self, path=None, play=False, current=0):
         super().__init__()
-        self.path=path
+        self.path = path
         self.setFixedSize((642 // 2) - 40, 100)
         from frontend.controllers.Menu_controllers import NavigationController
 
-        self.controller=NavigationController()
+        self.controller = NavigationController()
         self.font, self.font_family = self.set_font(
             "./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf")
         self.inner_widgets()
-        self.init_player(self.path,play,current)
-        #self.slots()
+        self.init_player(self.path, play, current)
+        # self.slots()
 
-    def init_player(self, file_path,play=False,current=0):
+    def init_player(self, file_path, play=False, current=0):
         self.player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
         self.player.setAudioOutput(self.audio_output)
         self.player.setSource(QUrl.fromLocalFile(file_path))
         self.is_playing = False
         self.player.stop()
-
 
         self.duration = 0
         self.player.positionChanged.connect(self.update_position)
@@ -47,24 +45,40 @@ class AudioPlayer(QWidget):
         self.rewind_button.clicked.connect(self.rewind_10s)
         self.forward_button.clicked.connect(self.forward_10s)
 
-    def set_file_path(self,path):
+    def set_file_path(self, path):
         self.path = path
 
     def reload_audio(self):
         """Cette fonction permet de recharger l'audio player """
-        #QMediaPlayer garde dans le cache le premier audio chargé malgré le fait qu'on a changer de fichier
+        # QMediaPlayer garde dans le cache le premier audio chargé malgré le fait qu'on a changer de fichier
         self.player.stop()  # Stop pour forcer un reset
         self.player.setSource(QUrl.fromLocalFile(self.path))  # Recharge la source
-        self.slider.setValue(0)
-        self.left_time_label.setText("00:00")
-        self.right_time_label.setText("00:00")
-        self.is_playing = False
-        self.play_pause_button.setIcon(QIcon("./assets/SVG/play_arrow.svg"))
+
+    def release_resources(self):
+        if self.player:
+            self.player.stop()
+            self.player.setAudioOutput(None)
+            self.player.setSource(QUrl())  # Vide la source
+
+            try:
+                self.player.positionChanged.disconnect()
+                self.player.durationChanged.disconnect()
+                self.player.mediaStatusChanged.disconnect()
+            except TypeError:
+                pass  # Si déjà déconnecté
+
+            self.player.deleteLater()
+            self.player = None
+
+        if self.audio_output:
+            self.audio_output.deleteLater()
+            self.audio_output = None
 
     def check(self):
         if self.controller.get_play_pause():
             self.toggle_play_pause()
             print("ixi", self.controller.get_audio_player())
+
     def toggle_play_pause(self):
         if not self.is_playing:
             self.player.play()
@@ -93,7 +107,6 @@ class AudioPlayer(QWidget):
         self.position_en_secondes.emit(position / 1000)
         mm, ss = divmod(position // 1000, 60)
         self.left_time_label.setText(f"{mm:02d}:{ss:02d}")
-
 
     def update_duration(self, dur):
         self.duration = dur
@@ -170,16 +183,16 @@ class AudioPlayer(QWidget):
         button.setIconSize((self.size() / sizeicone))
         button.setFixedSize(sizebutton, sizebutton)
         button.setCursor(Qt.PointingHandCursor)
-        if(file_path=="./assets/SVG/play_arrow.svg"):
+        if (file_path == "./assets/SVG/play_arrow.svg"):
             button.setObjectName("play")
             button.setStyleSheet(f"""
                                 QPushButton#play {{
                                     background-color: #007299;
                                     border-radius: {(sizebutton // 2) - 1}px;
                                 }}
-                                
+
                                 QPushButton#play::menu-indicator {{ width: 0; height: 0; }}
-    
+
                             """)
         else:
             button.setObjectName("autre")
@@ -198,6 +211,7 @@ class AudioPlayer(QWidget):
             """)
 
         return button
+
     def bottom_part(self):
         bottom_layout = QHBoxLayout()
         bottom_layout.setSpacing(30)
@@ -221,4 +235,5 @@ class AudioPlayer(QWidget):
         super().resizeEvent(event)
         # Positionne le bouton "more" dans le coin supérieur droit
         # Ici, on le place à 10 pixels du bord droit et 10 pixels du haut
-        self.more_boutton.move(self.width() - self.more_boutton.width() - 20, self.height() - self.more_boutton.height() - 35)
+        self.more_boutton.move(self.width() - self.more_boutton.width() - 20,
+                               self.height() - self.more_boutton.height() - 35)

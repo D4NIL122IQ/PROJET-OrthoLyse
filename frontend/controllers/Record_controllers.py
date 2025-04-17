@@ -12,7 +12,7 @@ class RecordeController:
         self.recorder.start()
 
     def stop_recording(self ,sv=True):
-        self.recorder.terminate(save=sv)
+        return self.recorder.terminate(save=sv)
 
     def get_final_file_path(self):
         return self.recorder.WAVE_OUTPUT_FILENAME
