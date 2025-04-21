@@ -2,12 +2,13 @@ import json
 from backend.Analyse_NLTK import Analyse_NLTK
 from backend.operation_fichier import file_size_sec
 from backend.exportation import exporte_docx, exporte_pdf, exporte_json
+from frontend.controllers.Menu_controllers import NavigationController
 import json
 import os
 
 
 # Ouvrir le fichier settings en mode lecture
-with open(os.path.abspath("./settings.json"), 'r', encoding='utf-8') as fichier:
+with open("./settings.json", 'r', encoding='utf-8') as fichier:
     # Charger le contenu du fichier JSON
     parametres = json.load(fichier)
 
@@ -20,6 +21,7 @@ class ResultController:
     """
     def __init__(self, transcrip="", file_path=""):
         self.resultat = Analyse_NLTK(text=transcrip)
+
         self.reultat_dic = parametres["ratio_metrique"]
         duree_audio = file_size_sec(file_path)/60
         self.numeroAnalyse = parametres["numero"]
@@ -29,12 +31,13 @@ class ResultController:
             self.multiplicateur = self.reultat_dic["duree"] / duree_audio;
 
         self.data ={}
+        self.data["texte"] = transcrip
 
     def get_lemme(self):
         """Cette methode permet de renvoyer le nombre de lemme"""
         resultat = self.resultat.calc_lemme()
         pourcentage = int((resultat * 50) / (self.reultat_dic["lemme"] * self.multiplicateur))
-        self.data["lemme"] = resultat
+        self.data["NombreLemme"] = resultat
         return  [resultat, pourcentage ]
 
     def get_word(self):
@@ -63,6 +66,7 @@ class ResultController:
         resultat = self.resultat.sent_size()
         pourcentage = int((resultat * 50) // (self.reultat_dic["nbrEnonce"] * self.multiplicateur))
         self.data["NombreEnonce"] = resultat
+        print("resultat = ", resultat)
         return [resultat, pourcentage]
 
     def get_morpheme_enonce(self):
@@ -73,12 +77,12 @@ class ResultController:
         return [resultat, pourcentage]
 
     def export_pdf(self):
-        exporte_pdf(f"./analyse{self.numeroAnalyse}.pdf", self.data)
+        exporte_pdf(f"./analyse{self.numeroAnalyse}.pdf", data = self.data, titre= f"Analyse n°{self.numeroAnalyse}")
 
     def export_json(self):
         exporte_json(f"./analyse{self.numeroAnalyse}.json", self.data)
 
     def export_docx(self):
-        exporte_docx(f"./analyse{self.numeroAnalyse}.docx", self.data)
+        exporte_docx(f"./analyse{self.numeroAnalyse}.docx", self.data, titre= f"Analyse n°{self.numeroAnalyse}")
 
 
