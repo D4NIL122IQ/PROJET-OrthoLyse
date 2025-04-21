@@ -19,8 +19,12 @@ class Prenregistrement(BaseEnregistrement):
         self.box.setStyleSheet(
             """
             background-color: rgba(255, 255, 255, 204);
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-right: 2px solid #CECECE;
+            border-bottom: 2px solid #CECECE;
+            border-left: 2px solid #CECECE;
+
         """
         )
 
@@ -43,9 +47,11 @@ class Prenregistrement(BaseEnregistrement):
             "./assets/SVG/Mic_2.svg",
             action=self.lunch_enregistrement,)
 
-
+        layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
-        layoutV.addLayout(self.controlBtn(self.listBtnOpt))
+        layoutV.addStretch(1)
+        layoutV.addLayout(super().controlBtn(self.listBtnOpt))
+        layoutV.addStretch(2)
 
         self.layout.addWidget(self.box)
 
@@ -54,7 +60,7 @@ class Prenregistrement(BaseEnregistrement):
         widget.setFixedSize(320, round(220 * 0.81))
         widget.setStyleSheet(
             """
-            border: 2px dashed #00BCD4;
+            border: 2px dashed #017399;
             border-radius: 15px;
             background-color: rgba(255, 255, 255, 0.9);
         """

@@ -33,7 +33,7 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         self.layout.setAlignment(Qt.AlignCenter)
         self.layout.addStretch()
         self.head()
-        self.br()
+        self.line()
         self.container()
         self.layout.addStretch()
 
@@ -45,8 +45,11 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         self.bar.setStyleSheet(
             """
             background-color: rgba(255, 255, 255, 204);
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            border : 2px 2px 0px 2px;
+            border-color : #CECECE;
+            border-style: solid;
         """
         )
         self.text = QLabel("Enregistrement", self.bar)
@@ -54,7 +57,8 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         self.text.setStyleSheet(
             """
             background-color: transparent;
-            color: #4c4c4c;
+            color: #007299;
+            border: 0px;
         """
         )
         layoutV = QVBoxLayout(self.bar)
@@ -62,10 +66,13 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         layoutV.addWidget(self.text, alignment=Qt.AlignVCenter | Qt.AlignLeft)
         self.layout.addWidget(self.bar, alignment=Qt.AlignCenter)
 
-    def br(self):
+    def line(self):
         self.line = QWidget(self)
         self.line.setMinimumSize(320, 2)
         self.line.setMaximumSize(520, 2)
+        self.line.setStyleSheet(
+            "background-color: #CECECE;"
+        )
         self.layout.addWidget(self.line)
 
     @abstractmethod
@@ -80,19 +87,24 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
             case = QVBoxLayout()
             label = self.set_label(ico["label"])
             btn = self.setupBtn(ico["svg"], ico["action"], ico["size"])
-            case.addWidget(btn)
-            case.addWidget(label)
+
+            case.addStretch()
+            case.addWidget(btn, alignment=Qt.AlignCenter)
+            case.addWidget(label, alignment=Qt.AlignCenter)
             layoutContaineBtn.addLayout(case)
             layoutContaineBtn.addStretch(1)
         return layoutContaineBtn
 
-    def setupBtn(self, icon_path, action=None, size=30):
+    def setupBtn(self, icon_path, action=None, size=30, color="007299"):
         icon_mic = QIcon(QPixmap(icon_path))
         btn = QPushButton()
         btn.setIcon(icon_mic)
         btn.setIconSize(QSize(size, size))
         btn.setStyleSheet(
-            "border: 1px solid grey; border-radius: 20px; background-color: transparent; color:black;"
+            "border: 0px; "
+            "border-radius: 20px; "
+            "background-color: transparent; "
+            "color:black;"
         )
         btn.setFixedSize(40, 40)
         btn.setCursor(Qt.PointingHandCursor)
@@ -103,14 +115,18 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
     def set_text(self, text):
         text = QLineEdit(text)
         text.setFont(self.font)
-        text.setStyleSheet("background: transparent; color: #4c4c4c; border:none;")
+        text.setStyleSheet("background: transparent; "
+                           "color: #4c4c4c; "
+                           "border:none;")
         text.setReadOnly(True)
         text.setFrame(False)
         text.setAlignment(Qt.AlignCenter)
         return text
 
-    def set_label(self, text):
+    def set_label(self, text, color="#007299"):
         label = QLabel(text)
-        label.setStyleSheet("color: #4c4c4c; background-color: transparent")
+        label.setStyleSheet(f"color: {color};"
+                            " background-color: transparent;"
+                            "border: 0px;")
         label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         return label

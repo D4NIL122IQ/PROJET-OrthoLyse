@@ -33,8 +33,11 @@ class Enregistrement(BaseEnregistrement):
         self.box.setStyleSheet(
             """
             background-color: rgba(255, 255, 255, 204);
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 15x;
+            border-bottom-right-radius: 15px;
+            border-right: 2px solid #CECECE;
+            border-bottom: 2px solid #CECECE;
+            border-left: 2px solid #CECECE;
         """
         )
 
@@ -60,8 +63,11 @@ class Enregistrement(BaseEnregistrement):
         self.layoutPrincipal = self.set_body_elements(
                 "En cours d'enregistrement ...")
 
+        layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
+        layoutV.addStretch(1)
         layoutV.addLayout(super().controlBtn(self.listBtnOpt))
+        layoutV.addStretch(2)
 
         self.layout.addWidget(self.box)
 
@@ -70,7 +76,7 @@ class Enregistrement(BaseEnregistrement):
         widget.setFixedSize(320, round(220 * 0.81))
         widget.setStyleSheet(
             """
-            border: 2px dashed #00BCD4;
+            border: 2px dashed #017399;
             border-radius: 15px;
             background-color: rgba(255, 255, 255, 0.9);
         """

@@ -1,6 +1,6 @@
 from typing import override
 
-from PySide6.QtCore import Qt, Signal, QObject
+from PySide6.QtCore import Qt, Signal, QObject, QTimer
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -38,8 +38,11 @@ class StopEnregistrement(BaseEnregistrement):
         self.box.setStyleSheet(
             """
             background-color: rgba(255, 255, 255, 204);
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border-right: 2px solid #CECECE;
+            border-bottom: 2px solid #CECECE;
+            border-left: 2px solid #CECECE;
         """
         )
         self.listBtnOpt = [
@@ -66,10 +69,22 @@ class StopEnregistrement(BaseEnregistrement):
 
         self.layoutPrincipal = self.set_body_elements(
             "Cliquez pour écouter l'enregistrement")
+
+        layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
-        layoutV.addLayout(super().controlBtn(self.listBtnOpt))
+        layoutV.addStretch(1)
+        layoutV.addLayout(self.controlBtn(self.listBtnOpt))
+        layoutV.addStretch(2)
 
         self.layout.addWidget(self.box)
+
+    def lunch_principal(self):
+        self.controller.get_audio_player().liberer_fichier_audio()
+        self.controller.set_file_transcription_path("")
+
+        self.controller.change_page("Prenregistrer")
+
+        QTimer.singleShot(100, lambda: os.remove(self.audio_filename) if os.path.exists(self.audio_filename) else None)
 
     @override
     # surcharge d'une methode de la classe parente car dans cette classe on a pas besoin de placer un bouton
@@ -79,7 +94,7 @@ class StopEnregistrement(BaseEnregistrement):
         widget.setFixedSize(320, round(220 * 0.81))
         widget.setStyleSheet(
             """
-            border: 2px dashed #00BCD4;
+            border: 2px dashed #017399;
             border-radius: 15px;
             background-color: rgba(255, 255, 255, 0.9);
         """
@@ -112,23 +127,11 @@ class StopEnregistrement(BaseEnregistrement):
         return layoutContain
 
 
-    def lunch_principal(self):
-        self.controller.set_play_pause(play=False)
-        self.controller.set_file_transcription_path("")
-        #self.audio_player = None
-        if os.path.exists(self.audio_filename):
-            os.remove(self.audio_filename)
-
-        self.close()
-        self.controller.change_page("Prenregistrer")
 
 
     def back_exe(self):
         # Récupérer le chemin du fichier audio actuellement sélectionné
         current_file = self.controller.get_file_transcription_path()
-
-        # Si une transcription est déjà en cours, on ne fait rien
-
 
         # Si le fichier n'a pas changé depuis la dernière transcription, on ne relance pas
         if hasattr(self, "last_file_path") and self.last_file_path == current_file:
@@ -176,5 +179,4 @@ class TranscriptionRunnable(QRunnable):
         # Remet le curseur à son état normal une fois le traitement terminé
         self.controller.central_widget.setCursor(Qt.ArrowCursor)
         self.signals.fin.emit()
-
 
