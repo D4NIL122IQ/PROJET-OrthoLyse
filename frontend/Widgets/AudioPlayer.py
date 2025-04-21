@@ -47,17 +47,34 @@ class AudioPlayer(QWidget):
         self.path = path
 
     def reload_audio(self):
-        """Recharge le fichier audio, même s'il porte le même nom"""
+        """Recharge le fichier audio en se basant sur self.path"""
+        if not self.path:
+            return
+        # Arrêter et remettre la position à zéro
         self.player.stop()
+        self.player.setPosition(0)
+        # S'assurer que l'audio_output est attaché
+        if not self.audio_output:
+            self.audio_output = QAudioOutput(self)
+        self.player.setAudioOutput(self.audio_output)
+        # Recharger directement le chemin
+        self.player.setSource(QUrl.fromLocalFile(self.path))
+        # Réinitialiser l'état de lecture
+        self.is_playing = False
+        self.play_pause_button.setIcon(QIcon("./assets/SVG/play_arrow.svg"))
 
-        # Cache-busting : forcer Qt à croire que c’est un nouveau fichier
-        cache_bust_path = self.path + f"?v={int(time.time())}"
-
-        # Nettoyage du QMediaPlayer en réinitialisant d’abord la source
-        self.player.setSource(QUrl())  # Remet à zéro pour forcer une vraie relecture
-
-        # Délai très court pour laisser le temps de reset la source avant de recharger
-        QTimer.singleShot(50, lambda: self.player.setSource(QUrl.fromLocalFile(self.path)))
+    def liberer_fichier_audio(self):
+        """
+        Libère les ressources du fichier audio pour permettre sa suppression.
+        """
+        if self.player:
+            self.player.stop()
+            self.player.setAudioOutput(None)
+            self.player.setSource(QUrl())  # Déconnecte le fichier
+            QTimer.singleShot(100, lambda: None)  # Laisse le temps au système de relâcher le fichier
+        if self.audio_output:
+            self.audio_output.deleteLater()
+            self.audio_output = None
 
     def release_resources(self):
         if self.player:

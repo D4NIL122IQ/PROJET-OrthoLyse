@@ -70,6 +70,11 @@ class CorrectionTranscription(QWidget):
         print("Nouvelle taille de Feuille :", self.width(), self.height())
         self.test(event)
 
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        if self.audio_player and self.audio_player.player and self.audio_player.is_playing==True:
+            self.audio_player.toggle_play_pause()
+
     def test(self, event):
         """
         Ajuste la taille du widget d'édition en fonction des dimensions de la fenêtre.

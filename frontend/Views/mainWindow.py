@@ -1,32 +1,16 @@
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import (
     QMainWindow,
-    QPushButton,
-    QApplication,
-    QWidget,
+
     QLabel,
-    QVBoxLayout,
-    QSizePolicy,
-    QHBoxLayout,
+
     QToolBar,
     QStackedWidget,
 )
-import sys
-import os
-from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtGui import QImage, QPalette, QBrush, QPainter, QPixmap
+
 from PySide6.QtCore import Qt, QBuffer, QByteArray
-from frontend.Views.HelpTranscription import HelpTranscription
 from frontend.Views.Home import Home
-from frontend.Views.ChoixDeMoteurs import ChoixDeMoteurs
-from frontend.Views.Informations import Informations
-from frontend.Views.ImporterAudio import ImporterAudio
-from frontend.Views.ModeDeChargement import ModeDeChargement
-from frontend.Views.HelpTranscription import HelpTranscription
-from frontend.Views.Prenregistrement import Prenregistrement
-from frontend.Views.Enregistrement import Enregistrement
-from frontend.Views.StopEnregistrement import StopEnregistrement
+
 from frontend.controllers.Menu_controllers import NavigationController
 
 
@@ -45,7 +29,7 @@ class MyWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("OrthoLyse")
-        self.setWindowIcon(QIcon("icon.png"))
+        self.setWindowIcon(QIcon("./assets/Logo/logo2.svg"))
         self.setMinimumSize(642, 450)
         self.resize(642, 450)
         self.setStyleSheet("color:#000;")
@@ -79,8 +63,10 @@ class MyWindow(QMainWindow):
         # Initialisation de la barre d'outils
         self.toolbar = QToolBar("Menu")
         self.toolbar.setMovable(False)
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextOnly)
         self.addToolBar(Qt.TopToolBarArea, self.toolbar)
         self.toolbar.setStyleSheet("color: #007299; background:rgba(0, 0, 0, 0);text-align:right")
+        # ou Qt.ToolButtonTextUnderIcon si tu veux aussi des icônes
 
         # Actions de la barre d'outils
         actions = [
@@ -89,11 +75,10 @@ class MyWindow(QMainWindow):
             ("Import", "ImporterAudio"),
             ("Parametres", "Parametres"),
             ("Info", "Information"),
-            ("Metrique", "Metrique")
-
         ]
 
         for label, page in actions:
             action = QAction(label, self)
+            action.setShortcut(f"Alt+{label[1]}")  # Ajoute un raccourci explicite
             action.triggered.connect(lambda checked, p=page: self.controller.change_page(p))
             self.toolbar.addAction(action)

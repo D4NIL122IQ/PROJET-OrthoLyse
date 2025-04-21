@@ -1,10 +1,10 @@
 import sys
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-    QSlider, QPushButton, QSizePolicy, QLabel, QMenu, QPlainTextEdit, QGraphicsBlurEffect
+     QPushButton, QSizePolicy, QLabel, QPlainTextEdit
 )
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QFont, QPalette, QColor, QPixmap, QTextCursor, QBrush
+from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QObject
+from PySide6.QtGui import QFont, QColor, QPixmap, QTextCursor, QBrush
 
 
 class Feuille(QWidget):
@@ -102,16 +102,18 @@ class Feuille(QWidget):
         self.left_boutton=self.boutton( self.widget,self.left_button_text,"#FFFFFF","#15B5D4","#15B5D4")
 
         if self.right_butto_text=="Coriger":
-            self.right_boutton.clicked.connect(lambda :self.controller.change_page("CTanscription"))
+            self.right_boutton.clicked.connect(lambda :(self.controller.change_page("CTanscription"),self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         elif self.right_butto_text=="Annuler":
 
             self.right_boutton.clicked.connect(lambda :(self.controller.set_text_transcription(self.old_text),
-                                                        self.controller.change_page("Transcription")))
+                                                        self.controller.change_page("Transcription"),
+                                                        self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         if self.left_button_text=="Valider":
             self.controller.set_text_transcription(self.text_edit.toPlainText())
             self.left_boutton.clicked.connect(
                 lambda: (self.controller.set_text_transcription(self.text_edit.toPlainText()),
-                         self.controller.change_page("Transcription")))
+                         self.controller.change_page("Transcription"),
+                         self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         if self.left_button_text == "Analyser":
             self.left_boutton.clicked.connect(lambda: self.controller.change_page("Metrique"))
 
@@ -199,6 +201,7 @@ class Feuille(QWidget):
         highlight_format = cursor.charFormat()
         highlight_format.setBackground(QBrush(QColor("yellow")))  # Surligner en jaune
         cursor.setCharFormat(highlight_format)
+
 
 
 text="""l'anis

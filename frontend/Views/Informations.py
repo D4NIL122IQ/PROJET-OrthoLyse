@@ -12,10 +12,11 @@ class Informations(QWidget):
         #creer l'image de font
 
         self.label_image = QLabel(self)
-        self.pixmap = QPixmap("./assets/image/Info.png")  # Charge ton image
+        self.pixmap = QPixmap("./assets/image/Infor.png")  # Charge ton image
         self.label_image.setPixmap(self.pixmap)
+        self.label_image.setStyleSheet("background:#fff;")
         self.label_image.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.label_image.setScaledContents(True)  # Pour que l'image suive la taille du QLabel
+        self.label_image.setScaledContents(False)  # Pour que l'image garde ses proportions
 
         #creer l'icone de retour en arrière
         self.icone=self.creerIcone()
@@ -26,6 +27,7 @@ class Informations(QWidget):
 
         self.layout.addWidget(self.icone)
         self.layout.addWidget(self.label_image)
+        self.layout.addStretch(1)
         self.setLayout(self.layout)
 
 
@@ -45,7 +47,7 @@ class Informations(QWidget):
         container=QWidget()
         container.setStyleSheet("background:#FFF;")
         layout=QHBoxLayout()
-
+        layout.setContentsMargins(0,0,0,0)
         layout.addWidget(btn)
         layout.addStretch(1)
 
@@ -55,6 +57,6 @@ class Informations(QWidget):
     def resizeEvent(self, event):
         if not self.pixmap.isNull():
             # Redimensionne l'image selon la nouvelle taille
-            self.label_image.setPixmap(self.pixmap.scaled(self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
+            self.label_image.setPixmap(self.pixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         super().resizeEvent(event)

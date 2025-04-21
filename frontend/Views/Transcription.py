@@ -55,6 +55,11 @@ class Transcription(QWidget):
         print("Nouvelle taille de Feuille :", self.width(), self.height())
         self.test(event)
 
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        if self.audio_player and self.audio_player.player and self.audio_player.is_playing==True:
+            self.audio_player.toggle_play_pause()
+
     def test(self,event):
         self.feuille.setFixedSize((self.width() // 2), round(self.height() * 0.90))
         self.feuille.widget.setFixedSize(self.feuille.width(), self.feuille.height())
