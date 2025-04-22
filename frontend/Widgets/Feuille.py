@@ -115,7 +115,7 @@ class Feuille(QWidget):
                          self.controller.change_page("Transcription"),
                          self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         if self.left_button_text == "Analyser":
-            self.left_boutton.clicked.connect(lambda: self.controller.change_page("Metrique"))
+            self.left_boutton.clicked.connect(lambda: self.lance_metrique())
 
         label_layout = QHBoxLayout()
         label_layout.addStretch(1)
@@ -201,6 +201,20 @@ class Feuille(QWidget):
         highlight_format = cursor.charFormat()
         highlight_format.setBackground(QBrush(QColor("yellow")))  # Surligner en jaune
         cursor.setCharFormat(highlight_format)
+
+    def lance_metrique(self):
+        self.controller.disable_toolbar()
+        try:
+            self.left_boutton.clicked.disconnect()
+            self.right_boutton.clicked.disconnect()
+        except TypeError:
+            pass
+
+        self.left_boutton.setCursor(Qt.ForbiddenCursor)
+        self.right_boutton.setCursor(Qt.ForbiddenCursor)
+
+        self.controller.change_page("Metrique")
+
 
 
 
