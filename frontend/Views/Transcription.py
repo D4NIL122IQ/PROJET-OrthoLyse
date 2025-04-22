@@ -1,7 +1,6 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QLabel
-import json
-from backend.transcription import transcription
+from PySide6.QtWidgets import QWidget, QSizePolicy, QHBoxLayout
+
 from frontend.Widgets.AudioPlayer import AudioPlayer
 from frontend.Widgets.Feuille import Feuille
 
@@ -32,8 +31,11 @@ class Transcription(QWidget):
 
         self.audio_player.position_en_secondes.connect(self.on_position_changed)
 
-        self.feuille = Feuille("./assets/SVG/icone_file_text.svg", "Transcription", "Analyser", "Coriger",
+        self.feuille = Feuille("./assets/SVG/icone_file_text.svg",
+                               "Transcription",
+                               "Analyser", "Coriger",
                                "rgba(255, 255, 255, 255)", self.text)
+
         self.feuille.setObjectName("feuille")
         # self.feuille.setStyleSheet('QWidget#feuille{background-color: white; border-radius: 20px;border: 1px solid black}')
         self.layout.addWidget(self.audio_player)

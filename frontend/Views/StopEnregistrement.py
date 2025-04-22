@@ -1,22 +1,19 @@
 from typing import override
 
-from PySide6.QtCore import Qt, Signal, QObject, QTimer
+from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
 )
-from PySide6.QtCore import QRunnable, QThreadPool
+from PySide6.QtCore import QThreadPool
 import os
-import time
 
-from frontend.Views.Enregistrement import Prenregistrement
+
 from frontend.Views.base.base_enregistrement import BaseEnregistrement
 from frontend.Widgets.AudioPlayer import AudioPlayer
-from backend.transcription import transcription
+from frontend.controllers.Transcription_worker import TranscriptionRunnable
 
-
-# classe mere des deux autres classes enregistrement et ecoute
 
 class StopEnregistrement(BaseEnregistrement):
     def __init__(self):
@@ -49,13 +46,13 @@ class StopEnregistrement(BaseEnregistrement):
             {
                 "svg": "./assets/SVG/cancel.svg",
                 "size": 32,
-                "action": self.lunch_principal,
+                "action": self.lunch_prenregistrement,
                 "label": "annuler",
             },
             {
                 "svg": "./assets/SVG/lunchT.svg",
                     "size": 32,
-                    "action": self.back_exe,
+                    "action": self.lunch_transcription,
                     "label": "Transcrire",
             }
         ]
@@ -67,8 +64,7 @@ class StopEnregistrement(BaseEnregistrement):
         layoutV.setContentsMargins(0, 0, 0, 0)
         layoutV.setSpacing(0)
 
-        self.layoutPrincipal = self.set_body_elements(
-            "Cliquez pour écouter l'enregistrement")
+        self.layoutPrincipal = self.set_body_elements(titleContainer="Cliquez pour écouter l'enregistrement")
 
         layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
@@ -77,14 +73,6 @@ class StopEnregistrement(BaseEnregistrement):
         layoutV.addStretch(2)
 
         self.layout.addWidget(self.box)
-
-    def lunch_principal(self):
-        self.controller.get_audio_player().liberer_fichier_audio()
-        self.controller.set_file_transcription_path("")
-
-        self.controller.change_page("Prenregistrer")
-
-        QTimer.singleShot(100, lambda: os.remove(self.audio_filename) if os.path.exists(self.audio_filename) else None)
 
     @override
     # surcharge d'une methode de la classe parente car dans cette classe on a pas besoin de placer un bouton
@@ -116,7 +104,7 @@ class StopEnregistrement(BaseEnregistrement):
 
         layout.addWidget(label) #ajout du label dans le layout vertical
         layout.addLayout(layoutH) #ajout du player_audio
-        widget.setLayout(layout) #ajout du ayout vertical dans le widget (afin d'avoir le style)s
+        widget.setLayout(layout) #ajout du layout vertical dans le widget (afin d'avoir le style)s
 
         #pour centrer le VBoxLayout au milieu de la page
         layoutContain = QHBoxLayout()
@@ -126,17 +114,37 @@ class StopEnregistrement(BaseEnregistrement):
 
         return layoutContain
 
+    def lunch_prenregistrement(self):
+        """Cette methode permet de lancer la page prenregistrer
+        mais d'abord elle libere le player audio, et supprime le nom de fichier mis dans le controllers
+        ainsi que le fichier audio enregistrer"""
+        self.controller.get_audio_player().liberer_fichier_audio()
+        self.controller.set_file_transcription_path("")
 
+        self.controller.change_page("Prenregistrer")
 
+        QTimer.singleShot(100, lambda: os.remove(self.audio_filename) if os.path.exists(self.audio_filename) else None)
 
-    def back_exe(self):
+    def lunch_transcription(self):
+        """"Cette methode lunce un thread qui s'occupe de faire la transcription et lance la page transcription"""
         # Récupérer le chemin du fichier audio actuellement sélectionné
         current_file = self.controller.get_file_transcription_path()
 
         # Si le fichier n'a pas changé depuis la dernière transcription, on ne relance pas
-        if hasattr(self, "last_file_path") and self.last_file_path == current_file:
-            print("Le fichier audio n'a pas changé.")
-            return
+        if (hasattr(self, "last_file_path")):
+            if (self.last_file_path == current_file):
+                self.controller.set_text_transcription(self.controller.get_first_text_transcription())
+                self.controller.set_mapping_data(self.controller.get_first_mapping())
+                self.controller.change_page("Transcription")
+                print("Le fichier audio n'a pas changé.")
+                return
+
+        #desactivation de la tool bar
+        try:
+            self.controller.disable_toolbar()
+        except TypeError:
+            # Le signal n'était pas connecté
+            pass
 
         # Mémoriser le fichier actuel et indiquer qu'une transcription est en cours
         self.last_file_path = current_file
@@ -149,34 +157,11 @@ class StopEnregistrement(BaseEnregistrement):
         def on_transcription_finished():
             self.transcription_in_progress = False
             self.controller.change_page("Transcription")
+            self.controller.central_widget.setCursor(Qt.ArrowCursor)
+            self.controller.enable_toolbar()
 
         # Connecter le signal "fin" à la fonction de fin
         runnable.signals.fin.connect(on_transcription_finished)
 
         # Exécuter le QRunnable dans le QThreadPool
         QThreadPool.globalInstance().start(runnable)
-
-class WorkerSignals(QObject):
-    fin = Signal()  # Signal émis à la fin du traitement
-
-class TranscriptionRunnable(QRunnable):
-    def __init__(self, controller):
-        super().__init__()
-        self.controller = controller
-        self.signals = WorkerSignals()
-
-    def run(self):
-        # Change le curseur en mode de chargement sur le widget central
-        self.controller.central_widget.setCursor(Qt.WaitCursor)
-
-        # Exécute la transcription
-        result = transcription(self.controller.get_file_transcription_path())
-
-        # Mise à jour de l'interface utilisateur
-        self.controller.set_text_transcription(result["text"])
-        self.controller.set_mapping_data(result["mapping"])
-        self.controller.set_first_mapping(result["mapping"])
-        # Remet le curseur à son état normal une fois le traitement terminé
-        self.controller.central_widget.setCursor(Qt.ArrowCursor)
-        self.signals.fin.emit()
-
