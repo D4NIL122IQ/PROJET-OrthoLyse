@@ -10,6 +10,7 @@ from backend.transcription import transcription
 from frontend.Widgets.Header import Header
 from frontend.controllers.Menu_controllers import NavigationController
 from PySide6.QtCore import QRunnable, QThreadPool
+from frontend.controllers.Transcription_worker import TranscriptionRunnable
 
 AUDIO_EXTENSIONS = {
     ".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".opus",
@@ -321,13 +322,12 @@ class ImporterAudio(QWidget):
             self.browse_button.setCursor(Qt.PointingHandCursor)
             self.left_boutton.clicked.connect(self.page_mode)
             self.left_boutton.setCursor(Qt.PointingHandCursor)
+            self.controller.central_widget.setCursor(Qt.ArrowCursor)
 
-
-
-        try:
-            runnable.signals.fin.disconnect(on_transcription_finished)
-        except TypeError:
-            pass
+        #try:
+        #    runnable.signals.fin.disconnect(on_transcription_finished)
+        #except TypeError:
+        #    pass
         runnable.signals.fin.connect(on_transcription_finished)
 
         # Exécuter le QRunnable dans le QThreadPool
@@ -532,30 +532,3 @@ class ImporterAudio(QWidget):
         self.text.setFont(font)
 
 
-class WorkerSignals(QObject):
-    fin = Signal()  # Signal émis à la fin du traitement
-
-
-class TranscriptionRunnable(QRunnable):
-    def __init__(self, controller):
-        super().__init__()
-        self.controller = controller
-        self.signals = WorkerSignals()
-
-    def run(self):
-        # Change le curseur en mode de chargement sur le widget central
-        self.controller.central_widget.setCursor(Qt.WaitCursor)
-
-        # Exécute la transcription
-        result = transcription(self.controller.get_file_transcription_path())
-        if self.controller.get_audio_player():
-            self.controller.set_audio_player(None)  # si le path change donc ont doit supprimer l'instance de audio player ausssi
-
-        # Mise à jour de l'interface utilisateur
-        self.controller.set_text_transcription(result["text"])
-        self.controller.set_first_text_transcription(result["text"])
-        self.controller.set_mapping_data(result["mapping"])
-        self.controller.set_first_mapping(result["mapping"])
-        # Remet le curseur à son état normal une fois le traitement terminé
-        self.controller.central_widget.setCursor(Qt.ArrowCursor)
-        self.signals.fin.emit()
