@@ -20,7 +20,9 @@ class LoaderWidget(QWidget):
 
         # Texte "Analyse..." centré avec opacité
         self.label = QLabel("Analyse...", alignment=Qt.AlignmentFlag.AlignCenter)
-        self.label.setStyleSheet("font-size: 16px; color: #007299;")
+        self.label.setStyleSheet("font-size: 30px; "
+                                 "font-weight: bold; "
+                                 "color: #007299;")
 
         self.opacity_effect = QGraphicsOpacityEffect(self.label)
         self.label.setGraphicsEffect(self.opacity_effect)

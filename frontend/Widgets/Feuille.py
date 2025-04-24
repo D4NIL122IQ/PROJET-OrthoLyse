@@ -1,9 +1,8 @@
-import sys
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-     QPushButton, QSizePolicy, QLabel, QPlainTextEdit
+    QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QSizePolicy, QLabel, QPlainTextEdit
 )
-from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QObject
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QColor, QPixmap, QTextCursor, QBrush
 
 

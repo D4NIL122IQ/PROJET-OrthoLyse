@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxL
     QPushButton, QGroupBox, QGridLayout, QSizePolicy, QMessageBox, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QIntValidator, QColor, QIcon
+
 from frontend.controllers.Menu_controllers import NavigationController
 from frontend.controllers.Settings_controller import SettingsController
 

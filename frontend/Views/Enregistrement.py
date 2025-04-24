@@ -1,5 +1,3 @@
-from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtCore import Qt, QEvent, QSize
 from PySide6.QtWidgets import (
     QWidget,
     QSizePolicy,
@@ -7,7 +5,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QHBoxLayout,
 )
-from frontend.Views.Prenregistrement import Prenregistrement
+
 from frontend.Views.base.base_enregistrement import BaseEnregistrement
 from frontend.controllers.Record_controllers import RecordeController
 from frontend.Widgets.AudioBar import AudioBar

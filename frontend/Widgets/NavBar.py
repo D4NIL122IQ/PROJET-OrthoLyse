@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QSizePolicy
 from PySide6.QtCore import QPropertyAnimation, QRect
 
 class NavBar(QWidget):

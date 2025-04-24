@@ -2,10 +2,10 @@ from PySide6.QtCore import QUrl, Qt, Signal, QTimer
 from PySide6.QtGui import QFontDatabase, QFont, QIcon
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-    QSlider, QPushButton, QSizePolicy, QLabel, QMenu
+    QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QSizePolicy, QLabel, QMenu
 )
-import time
+
 from frontend.Widgets.HoverSlider import HoverSlider
 
 

@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
 )
-from PySide6.QtCore import Qt, QEvent, QSize
+from PySide6.QtCore import Qt, QSize
 import os
 from frontend.controllers.Menu_controllers import NavigationController
 

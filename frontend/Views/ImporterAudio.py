@@ -6,8 +6,6 @@ from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, QLabel, QFileDialog, QHBoxLayout, QLineEdit, \
     QPushButton, QApplication
 
-from backend.transcription import transcription
-from frontend.Widgets.Header import Header
 from frontend.controllers.Menu_controllers import NavigationController
 from PySide6.QtCore import QRunnable, QThreadPool
 from frontend.controllers.Transcription_worker import TranscriptionRunnable

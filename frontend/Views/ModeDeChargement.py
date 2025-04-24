@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 
-from frontend.Widgets.Header import Header
 from frontend.controllers.Menu_controllers import NavigationController
 
 
