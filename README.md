@@ -2,23 +2,35 @@
 
 ## C'est quoi ?
 
-c'est une app multiplatforme consu pour les ortophoniste afin de faire des analyses sysntaxiques
-premiere variante pour le marché franconphone
+c'est une app multiplatforme consu pour les ortophoniste afin de faire des analyses sysntaxiques et c'est une premiere variante pour le marché franconphone !!
 
 ## Le principe
 
-exporter un audio ou faire un enregistrement direct sur l'app puis lancer la transcription avec openai-whisper correction des fautes de transcription pour ne pas erroné les resultats des calcules des métriques
+L'utilisateur peut importer un audio (en drag-and-drop ou en parcourant les fichiers dispo sur le disque) ou faire un enregistrement audio sur l'app, puis il lance la transcription qui est plus ou moins précise selon le modèle de whisper choisi dans les paramètres, puis l'utilisateur, peut relire l'audio et corriger la transcription pour les éventuelles fautes pour ne pas erroner les résultats, et ensuite les résultats sont affichés accompagnés d'une jauge d'indication de niveau (le ratio de cette jauge est déterminé selon le ratio configuré dans les paramètres!)
 
-## La transcritpion
+## Les technologies
+### La transcritpion
 
-Whisper openai est un outils de transcription trés performant mais ilo a besoin d'un envirement optimiser afin de profiter de toute sa puissance tel que :
+Avec **Whisper-openai**, on a procédé à la transcription, mais pour atteindre le maximum de whisper, on a besoin d'un fichier audio d'une taille < 25 Mo et/ou d'une durée < 10 min
 
-- Le fichier audio ne doit pas peser plus de 25mo || la durée de ce dernier est < 10min
+pour ce faire, on fait un petit tri avant de procéder à la transcription :
+- les fichiers mp4 sont convertis en fichiers mp3 
+- le fichier > 25Mo et/ou >de 10 min sont divisés en plusieurs fichiers de 5 min 
 
-pour ce avec Pydub ca me permet de diviser le fichier en plusiers sous-fichier de durée inferieur (avec une durée variable qu'on reglera par la suite afin d'optimiser l'app) calssé dans un repertoire puis a la fin de la transcription on supprime ce repertoire afin que l'app ne consome pas trop memoire.
+-**! tous les fichiers générés seront supprimés à la fin de la transcription**
 
-###### Sinon
+### L'analyse 
 
-Avec \_\_\_\_ ca me permet de diviser le fichier en plusiers sous-fichiers de taille inferieurs avec le meme principe de la premiere methode
+Dans le cadre de notre projet, on procède à deux grandes analyses :
+- Le nombre de lemme : on utilise **spacy** 
+- le nombre de morphèmes : on utilise **NLTK**, mais pour avoir plus de précision on a téléchargé deux dictionnaires pour les suffixes et les préfixes
 
-© Projet L2 université paris cité
+### L'interface graphique 
+
+Pour l'interface, on a utilisé **PySide6**, un outil open-source facile à prendre en main. L'interface se dévise en plusieurs pages, avec une architecture MVC, et pour éviter tout crash de l'app lors des longs processus (tels que l'analyse ou la transcription), on lance ces processus-là dans des threads secondaires et bloque tout accès à d'autres pages de l'app tant que le thread secondaire n'est pas encore fini
+
+
+### with 
+@assinscreedFC & @D4NIL122IQ
+s
+© Projet L2 université paris cité 
