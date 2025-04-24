@@ -30,7 +30,30 @@ Dans le cadre de notre projet, on procède à deux grandes analyses :
 Pour l'interface, on a utilisé **PySide6**, un outil open-source facile à prendre en main. L'interface se dévise en plusieurs pages, avec une architecture MVC, et pour éviter tout crash de l'app lors des longs processus (tels que l'analyse ou la transcription), on lance ces processus-là dans des threads secondaires et bloque tout accès à d'autres pages de l'app tant que le thread secondaire n'est pas encore fini
 
 
-### with 
+## Pour telecharger l'app en local 
+
+Clone du repo en local
+```bash
+gh repo clone D4NIL122IQ/PROJET-OrthoLyse 
+```
+
+Init de la machine vertuelle 
+```bash
+cd PROJET-OrthoLyse 
+python3 -m venv venv-p
+source ./venv-p/bin/activate # pour les machines macOS / Linux
+\source\Scripts\activate # pour les machines windows
+```
+
+Telecharger les dependences de l'app
+```bash
+pip install -r requirements.txt 
+```
+
+Lancement de l'app
+```bash
+python3 frontend/main.app
+```
+ 
 @assinscreedFC & @D4NIL122IQ
-s
 © Projet L2 université paris cité 
