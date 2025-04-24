@@ -1,7 +1,6 @@
 import os
 import json
 
-
 class SettingsController:
     def __init__(self):
         self.chemin_fichier = os.path.normpath(

@@ -1,17 +1,9 @@
-import os
-
-import sys
-
 from PySide6.QtCore import QUrl
-
 from PySide6.QtGui import QFontDatabase, QFont, QIcon
-
-from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer, QMediaPlayer
+from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 
 class PlayerController:
-
     """Contrôleur global pour gérer la navigation"""
-
     _instance = None
 
     def __new__(cls):

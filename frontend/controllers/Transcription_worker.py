@@ -1,5 +1,5 @@
 from PySide6.QtCore import QObject, Signal, QRunnable, Qt
-from backend.transcription import transcription
+from frontend.models.transcription import transcription
 
 
 class WorkerSignals(QObject):

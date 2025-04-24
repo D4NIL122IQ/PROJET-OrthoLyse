@@ -3,7 +3,7 @@ from pathlib import Path
 
 #import magic
 from pydub import AudioSegment
-from pydub.silence import detect_nonsilent, detect_silence
+from pydub.silence import detect_silence
 
 
 def file_size_Mo(file_path):

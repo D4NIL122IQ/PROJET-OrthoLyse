@@ -3,7 +3,7 @@ import os
 import shutil
 import torch
 import json
-from backend.operation_fichier import (
+from frontend.models.operation_fichier import (
     extract_audio_fmp4,
     file_size_Mo,
     file_size_sec,

@@ -4,9 +4,8 @@ import sys
 
 from PySide6.QtGui import QFontDatabase, QFont, Qt, QAction
 
-from backend.transcription import ajuster_mapping, transcription, custom_tokenize
-from frontend.Views.CorrectionTranscription import CorrectionTranscription
-from frontend.Views.Transcription import Transcription
+from frontend.models.transcription import ajuster_mapping, custom_tokenize
+
 
 
 class NavigationController:

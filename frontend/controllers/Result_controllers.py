@@ -1,11 +1,9 @@
 import json
-from backend.Analyse_NLTK import Analyse_NLTK
-from backend.operation_fichier import file_size_sec
-from backend.exportation import exporte_docx, exporte_pdf, exporte_json
-from frontend.controllers.Menu_controllers import NavigationController
-import json
-import os
+from frontend.models.Analyse_NLTK import Analyse_NLTK
+from frontend.models.operation_fichier import file_size_sec
+from frontend.models.exportation import exporte_docx, exporte_pdf, exporte_json
 
+import json
 
 # Ouvrir le fichier settings en mode lecture
 with open("./settings.json", 'r', encoding='utf-8') as fichier:

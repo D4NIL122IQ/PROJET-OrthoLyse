@@ -1,6 +1,6 @@
 from operator import truediv
 
-from backend.memo import Memo
+from frontend.models.memo import Memo
 
 class RecordeController:
     """Controllers pour relier les pages d'enregistrement a l'enregistreur (Memo) """
