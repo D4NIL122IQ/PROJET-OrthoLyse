@@ -12,7 +12,6 @@ class Metrique(QWidget):
     def __init__(self):
         super().__init__()
         self.navController = NavigationController()
-        self.navController.enable_toolbar()
         self.thread_pool = QThreadPool()
 
 
@@ -22,14 +21,17 @@ class Metrique(QWidget):
         self.timer = QTimer() #timer qui va nous servir a faire les animation
         self.timer.timeout.connect(self.update_animation)
         self.animated_widgets = [] #ce tableau contiendra tout les widget svg
-        self.size_card = 150
-
+        self.size_card = 150 #taille d'une carte
 
         self.layout = QVBoxLayout(self) #layout principal
         self.layout.setAlignment(Qt.AlignCenter)
 
         self.loader()
-        QTimer.singleShot(10, self.load_controller)
+        #QTimer.singleShot(10, self.load_controller)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.load_controller()
 
     def loader(self):
         print("1")
@@ -47,6 +49,7 @@ class Metrique(QWidget):
     def on_controller_loaded(self, controller):
         print("3")
         self.resultatController = controller
+        self.navController.enable_toolbar()  # activation de la toolbar
         # Nettoie la vue actuelle (loader)
         while self.layout.count():
             item = self.layout.takeAt(0)
