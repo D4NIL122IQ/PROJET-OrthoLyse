@@ -1,13 +1,12 @@
 import os
 
-from PySide6.QtCore import Qt, QEvent, QRunnable, QThreadPool, Signal, QObject
-from PySide6.QtGui import QPixmap, QPainter, QCursor, QFont, QIcon
+from PySide6.QtCore import Qt, QEvent, QThreadPool
+from PySide6.QtGui import QPixmap, QFont
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, QLabel, QFileDialog, QHBoxLayout, QLineEdit, \
-    QPushButton, QApplication
+    QPushButton
 
 from frontend.controllers.Menu_controllers import NavigationController
-from PySide6.QtCore import QRunnable, QThreadPool
 from frontend.controllers.Transcription_worker import TranscriptionRunnable
 
 AUDIO_EXTENSIONS = {
@@ -323,7 +322,7 @@ class ImporterAudio(QWidget):
             self.controller.central_widget.setCursor(Qt.ArrowCursor)
 
         #try:
-        #    runnable.signals.fin.disconnect(on_transcription_finished)
+         #   runnable.signals.fin.disconnect(on_transcription_finished)
         #except TypeError:
         #    pass
         runnable.signals.fin.connect(on_transcription_finished)
