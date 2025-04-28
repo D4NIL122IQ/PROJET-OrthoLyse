@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
-    QHBoxLayout
+    QHBoxLayout, QSizePolicy
 )
-
+from PySide6.QtCore import Qt
 
 from frontend.Views.base.base_enregistrement import BaseEnregistrement
 
@@ -12,10 +12,15 @@ class Prenregistrement(BaseEnregistrement):
     def __init__(self):
         super().__init__()
 
+
     def container(self):
+        self.boutons = []
+
         self.box = QWidget(self)
-        self.box.setMinimumSize(520, round(520 * 0.68))
-        self.box.setMaximumSize(520, 420)
+        self.box.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        self.box.setMinimumSize(420, round(520 * 0.68))  # Taille minimale
+        self.box.setMaximumSize(520, 600)  # Limite la hauteur du container
+
         self.box.setStyleSheet(
             """
             background-color: rgba(255, 255, 255, 204);
@@ -31,7 +36,6 @@ class Prenregistrement(BaseEnregistrement):
         self.listBtnOpt = [
             {
                 "svg": "./assets/SVG/cancel.svg",
-                "size": 32,
                 "action": self.page_mode,
                 "label": "annuler",
             }
@@ -45,20 +49,22 @@ class Prenregistrement(BaseEnregistrement):
         self.layoutPrincipal = self.set_body_elements(
             "Cliquez pour commencer à enregistrer",
             "./assets/SVG/Mic_2.svg",
-            action=self.lunch_enregistrement,)
+            action=self.lunch_enregistrement)
 
         layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
         layoutV.addStretch(1)
-        layoutV.addLayout(super().controlBtn(self.listBtnOpt))
-        layoutV.addStretch(2)
 
+        listBtn, layoutBtn =  super().controlBtn(self.listBtnOpt)
+        self.boutons.extend(listBtn)
+        layoutV.addLayout(layoutBtn)
+        layoutV.addStretch(2)
         self.layout.addWidget(self.box)
 
     def set_body_elements(self, titleContainer, svgIconPath, action=None):
-        widget = QWidget(self)
-        widget.setFixedSize(320, round(220 * 0.81))
-        widget.setStyleSheet(
+        self.zoneBlue = QWidget(self)
+        self.zoneBlue.setFixedSize(320, round(220 * 0.81))
+        self.zoneBlue.setStyleSheet(
             """
             border: 2px dashed #017399;
             border-radius: 15px;
@@ -66,9 +72,11 @@ class Prenregistrement(BaseEnregistrement):
         """
         )
 
-        layout = QVBoxLayout(widget)
-        label = super().set_text(titleContainer)
-        btnLance = super().setupBtn(svgIconPath, action=action)
+        layout = QVBoxLayout(self.zoneBlue)
+        self.labelContainer = super().set_text(titleContainer)
+        btnLance = super().setupBtn(svgIconPath, action=action, addToList=True)
+
+        self.boutons.append(btnLance)
 
         layoutH = QHBoxLayout()
         layoutH.setContentsMargins(0, 0, 0, 0)
@@ -77,13 +85,13 @@ class Prenregistrement(BaseEnregistrement):
         layoutH.addWidget(btnLance)
         layoutH.addStretch(1)
 
-        layout.addWidget(label)
+        layout.addWidget(self.labelContainer)
         layout.addLayout(layoutH)
-        widget.setLayout(layout)
+        self.zoneBlue.setLayout(layout)
 
         layoutContain = QHBoxLayout()
         layoutContain.addStretch(1)
-        layoutContain.addWidget(widget)
+        layoutContain.addWidget(self.zoneBlue)
         layoutContain.addStretch(1)
 
         return layoutContain
@@ -104,3 +112,6 @@ class Prenregistrement(BaseEnregistrement):
 
     def stop_enregistrement(self):
         self.controller.change_page("StopEnregistrer")
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)

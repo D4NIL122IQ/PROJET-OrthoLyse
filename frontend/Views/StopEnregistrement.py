@@ -29,6 +29,7 @@ class StopEnregistrement(BaseEnregistrement):
         self.controller.set_audio_player(self.audio_player)
 
     def container(self):
+        self.boutons =[]
         self.box = QWidget(self)
         self.box.setMinimumSize(520, round(520 * 0.68))
         self.box.setMaximumSize(520, 420)
@@ -51,7 +52,6 @@ class StopEnregistrement(BaseEnregistrement):
             },
             {
                 "svg": "./assets/SVG/lunchT.svg",
-                    "size": 32,
                     "action": self.lunch_transcription,
                     "label": "Transcrire",
             }
@@ -66,10 +66,12 @@ class StopEnregistrement(BaseEnregistrement):
 
         self.layoutPrincipal = self.set_body_elements(titleContainer="Cliquez pour écouter l'enregistrement")
 
+        listBtn, layoutBtn = super().controlBtn(self.listBtnOpt)
+        self.boutons.extend(listBtn)
         layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
         layoutV.addStretch(1)
-        layoutV.addLayout(self.controlBtn(self.listBtnOpt))
+        layoutV.addLayout(layoutBtn )
         layoutV.addStretch(2)
 
         self.layout.addWidget(self.box)
@@ -78,9 +80,9 @@ class StopEnregistrement(BaseEnregistrement):
     # surcharge d'une methode de la classe parente car dans cette classe on a pas besoin de placer un bouton
     def set_body_elements(self, titleContainer, *args, **kwargs):
         #on se sert du widget pour mettre en place un style
-        widget = QWidget(self)
-        widget.setFixedSize(320, round(220 * 0.81))
-        widget.setStyleSheet(
+        self.zoneBlue = QWidget(self)
+        self.zoneBlue.setFixedSize(320, round(220 * 0.81))
+        self.zoneBlue.setStyleSheet(
             """
             border: 2px dashed #017399;
             border-radius: 15px;
@@ -88,11 +90,11 @@ class StopEnregistrement(BaseEnregistrement):
         """
         )
 
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout(self.zoneBlue)
 
         label = self.set_text(titleContainer)
 
-        self.audio_player.setStyleSheet("border: 0px") #modification du style du player ou sinon il hérite le style du widget
+        self.audio_player.setStyleSheet("border: 0px") #modification du style du player ou sinon il hérite le style du self.zoneBlue
 
         layoutH = QHBoxLayout()
         layoutH.setContentsMargins(0, 0, 0, 0)
@@ -104,12 +106,12 @@ class StopEnregistrement(BaseEnregistrement):
 
         layout.addWidget(label) #ajout du label dans le layout vertical
         layout.addLayout(layoutH) #ajout du player_audio
-        widget.setLayout(layout) #ajout du layout vertical dans le widget (afin d'avoir le style)s
+        self.zoneBlue.setLayout(layout) #ajout du layout vertical dans le self.zoneBlue (afin d'avoir le style)s
 
         #pour centrer le VBoxLayout au milieu de la page
         layoutContain = QHBoxLayout()
         layoutContain.addStretch(1)
-        layoutContain.addWidget(widget)
+        layoutContain.addWidget(self.zoneBlue)
         layoutContain.addStretch(1)
 
         return layoutContain
