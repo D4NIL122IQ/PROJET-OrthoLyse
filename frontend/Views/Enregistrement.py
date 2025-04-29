@@ -25,6 +25,7 @@ class Enregistrement(BaseEnregistrement):
 
 
     def container(self):
+        self.boutons =[]
         self.box = QWidget(self)
         self.box.setMinimumSize(520, round(520 * 0.68))
         self.box.setMaximumSize(520, 420)
@@ -42,15 +43,14 @@ class Enregistrement(BaseEnregistrement):
         self.listBtnOpt = [
             {
                 "svg": "./assets/SVG/cancel.svg",
-                "size": 32,
                 "action":self.lunch_principal,
                 "label": "annuler",
             },
             {
                 "svg": "./assets/SVG/stopMic.svg",
-                "size": 24,
                 "action": self.stop_enregistrement,
                 "label": "stop",
+                "color": "red"
             }
         ]
 
@@ -61,18 +61,20 @@ class Enregistrement(BaseEnregistrement):
         self.layoutPrincipal = self.set_body_elements(
                 "En cours d'enregistrement ...")
 
+        listBtn, layoutBtn = super().controlBtn(self.listBtnOpt)
+        self.boutons.extend(listBtn)
         layoutV.addStretch(2)
         layoutV.addLayout(self.layoutPrincipal)
         layoutV.addStretch(1)
-        layoutV.addLayout(super().controlBtn(self.listBtnOpt))
+        layoutV.addLayout(layoutBtn)
         layoutV.addStretch(2)
 
         self.layout.addWidget(self.box)
 
     def set_body_elements(self, titleContainer,  *args, **kwargs):
-        widget = QWidget(self)
-        widget.setFixedSize(320, round(220 * 0.81))
-        widget.setStyleSheet(
+        self.zoneBlue = QWidget(self)
+        self.zoneBlue.setFixedSize(320, round(220 * 0.81))
+        self.zoneBlue.setStyleSheet(
             """
             border: 2px dashed #017399;
             border-radius: 15px;
@@ -80,7 +82,7 @@ class Enregistrement(BaseEnregistrement):
         """
         )
 
-        layout = QVBoxLayout(widget)
+        layout = QVBoxLayout(self.zoneBlue)
         label = self.set_text(titleContainer)
 
         self.audioBar = AudioBar()
@@ -93,11 +95,11 @@ class Enregistrement(BaseEnregistrement):
 
         layout.addWidget(label)
         layout.addLayout(layoutH)
-        widget.setLayout(layout)
+        self.zoneBlue.setLayout(layout)
 
         layoutContain = QHBoxLayout()
         layoutContain.addStretch(1)
-        layoutContain.addWidget(widget)
+        layoutContain.addWidget(self.zoneBlue)
         layoutContain.addStretch(1)
 
         return layoutContain
