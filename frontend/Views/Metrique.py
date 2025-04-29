@@ -13,21 +13,19 @@ class Metrique(QWidget):
         super().__init__()
         self.navController = NavigationController()
         self.thread_pool = QThreadPool()
-
-
+        self.fontBold, font_family = self.navController.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
         self.resultatController = None
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.timer = QTimer() #timer qui va nous servir a faire les animation
         self.timer.timeout.connect(self.update_animation)
         self.animated_widgets = [] #ce tableau contiendra tout les widget svg
-        self.size_card = 150 #taille d'une carte
 
+        self.cards = [] #ce tableau condiendra toutes les cartes genere
         self.layout = QVBoxLayout(self) #layout principal
         self.layout.setAlignment(Qt.AlignCenter)
 
         self.loader()
-        #QTimer.singleShot(10, self.load_controller)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -35,6 +33,7 @@ class Metrique(QWidget):
 
     def loader(self):
         print("1")
+        self.isLoaderOn = True
         self.layout.addWidget(LoaderWidget())
 
     def load_controller(self):
@@ -51,16 +50,26 @@ class Metrique(QWidget):
         self.resultatController = controller
         self.navController.enable_toolbar()  # activation de la toolbar
         # Nettoie la vue actuelle (loader)
-        while self.layout.count():
-            item = self.layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+        self.clear_layout(self.layout)
 
         self.layout.addStretch(2)
         self.container()
         self.layout.addStretch(1)
         self.bottom()
         self.layout.addStretch(1)
+        self.isLoaderOn = False
+        self.navController.central_widget.setCursor(Qt.ArrowCursor)
+
+    def clear_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+            elif item.layout():
+                self.clear_layout(item.layout())
+
+        self.cards.clear()
+        self.animated_widgets.clear()
 
     def container(self):
         """met en place une grille qui contient les resultats"""
@@ -77,7 +86,9 @@ class Metrique(QWidget):
         grid.setVerticalSpacing(20)
         for i in range(2):
             for j in range(3):
-                grid.addWidget(self.set_card(metrique[i * 3 + j]), i, j)
+                card = self.set_card(metrique[i * 3 + j])
+                grid.addWidget(card, i, j)
+                self.cards.append(card)
 
         self.layout.addLayout(grid)
         self.timer.start(20)
@@ -86,21 +97,22 @@ class Metrique(QWidget):
     def bottom(self):
         """met en place un bouton 'Exporter' en bas de page"""
         hbox = QHBoxLayout()
-        btn = QPushButton("Exporter")
+        self.btn = QPushButton("Exporter")
+        self.btn.setFont(self.fontBold)
         icon = QIcon(QPixmap("./assets/SVG/export.svg"))
-        btn.setIcon(icon)
-        btn.setIconSize(QSize(15, 15))
-        btn.setStyleSheet("background-color: white;"
+        self.btn.setIcon(icon)
+        self.btn.setIconSize(QSize(15, 15))
+        self.btn.setStyleSheet("background-color: white;"
                           " color : black;"
                           "border-radius: 12px;")
 
-        btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        btn.setMinimumSize(90, 25)
-        btn.setCursor(Qt.PointingHandCursor)
-        #btn.clicked.connect(lambda : self.show_menu(btn))
-        btn.clicked.connect(self.save)
+        self.btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.btn.setMinimumSize(90, 25)
+        self.btn.setMaximumSize(105, 35)
+        self.btn.setCursor(Qt.PointingHandCursor)
+        self.btn.clicked.connect(self.save)
         hbox.addStretch(2)
-        hbox.addWidget(btn)
+        hbox.addWidget(self.btn)
         self.layout.addLayout(hbox)
 
     def set_card(self, opt):
@@ -108,8 +120,8 @@ class Metrique(QWidget):
         wid = QWidget()
         wid.setStyleSheet("background-color:rgb(255,255,255); "
                           "border-radius: 10px;")
-
-        wid.setFixedSize(self.size_card, self.size_card)
+        wid.setMinimumSize(150, 150)
+        wid.setMaximumSize(200,200)
 
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(20)  # Flou de l'ombre
@@ -122,7 +134,8 @@ class Metrique(QWidget):
         box.setSpacing(0)
 
         svg_widget = QSvgWidget()
-        svg_widget.setFixedSize(150, 130)
+        svg_widget.setMinimumSize(150, 130)
+        svg_widget.setMaximumSize(250, 230)
 
         value = opt["getter"]()
         self.animated_widgets.append((svg_widget, value[1], 0))
@@ -138,17 +151,22 @@ class Metrique(QWidget):
         hBox = QVBoxLayout()
         label = QLabel(f' {info["getter"]()[0]} {info["label"]}')
         label.setStyleSheet("color: #4c4c4c; background-color: transparent")
+        label.setFont(self.fontBold)
         label.setWordWrap(True)
         label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         label.setAlignment(Qt.AlignCenter)
-        #hBox.addStretch()
         hBox.addWidget(label)
         hBox.addStretch()
         return hBox
 
     def update_animation(self):
         all_finished = True
+        cleaned_widgets = []
+
         for i, (svg_widget, target_value, current_value) in enumerate(self.animated_widgets):
+            if not svg_widget or not svg_widget.parent():  # Sécurité : objet détruit
+                continue  # On skip si le widget a été supprimé
+
             display_value = current_value
 
             if current_value < min(target_value, 100):
@@ -160,10 +178,16 @@ class Metrique(QWidget):
                 display_value = current_value
                 all_finished = False
             elif current_value == 100 and target_value > 100:
-                display_value = target_value  # Affiche directement 150 par exemple
+                display_value = target_value
 
-            self.animated_widgets[i] = (svg_widget, target_value, current_value)
-            self.update_svg(svg_widget, display_value)
+            cleaned_widgets.append((svg_widget, target_value, current_value))
+
+            try:
+                self.update_svg(svg_widget, display_value)
+            except RuntimeError:
+                continue  # L'objet a été détruit entre temps (sécurité)
+
+        self.animated_widgets = cleaned_widgets
 
         if all_finished:
             self.timer.stop()
@@ -253,3 +277,69 @@ class Metrique(QWidget):
 
     def export_as_docx(self):
         self.resultatController.export_docx()
+
+    def resizeEvent(self, event):
+        if self.isLoaderOn :
+            return
+        self.resize_card(event)
+        self.resize_button()
+
+    def resize_card(self, event=None):
+        window_width = event.size().width()
+        window_height = event.size().height()
+
+        # Calculer une taille basée à la fois sur largeur et hauteur de la fenêtre
+        card_size_from_width = window_width // 5  # Ex : 5 cartes max par ligne
+        card_size_from_height = window_height // 3  # Ex : 3 cartes max par colonne
+
+        # Prendre la plus petite des deux pour garder un aspect homogène
+        new_card_size = min(card_size_from_width, card_size_from_height)
+        new_card_size = max(150, min(new_card_size, 250))  # Contraindre entre 150 et 250
+
+        for card in self.cards:
+            card.setFixedSize(new_card_size, new_card_size)
+
+            # Redimensionner le svg_widget à l'intérieur de la carte
+            svg_widget = card.findChild(QSvgWidget)
+            if svg_widget:
+                svg_width = max(150, min(int(new_card_size * 0.9), 250))  # 90% de la carte
+                svg_height = max(130, min(int(new_card_size * 0.8), 230))  # 80% de la carte
+                svg_widget.setFixedSize(svg_width, svg_height)
+
+            label = card.findChild(QLabel)
+            if label:
+                font = label.font()
+                new_font_size = max(10, min(int(new_card_size * 0.08), 16))  # Entre 10 et 16
+                font.setPointSize(new_font_size)
+                label.setFont(font)
+
+    def resize_button(self):
+        parent = self.parentWidget() or self  # Utilise self si pas de parent
+
+        window_width = parent.width()
+
+        # Définir les tailles min et max
+        min_width = 90
+        max_width = 105
+        min_height = 25
+        max_height = 35
+
+        # Calculer dynamiquement une taille pour le bouton
+        new_width = int(window_width * 0.07)
+        new_width = max(min_width, min(new_width, max_width))
+
+        new_height = int(window_width * 0.02)
+        new_height = max(min_height, min(new_height, max_height))
+
+    # Appliquer les nouvelles tailles
+
+        self.btn.setFixedSize(QSize(new_width, new_height))
+
+        # Ajuster la taille de police
+        font = self.btn.font()
+        font.setPointSize(max(8, min(int(new_height * 0.5), 14)))
+        self.btn.setFont(font)
+
+
+
+
