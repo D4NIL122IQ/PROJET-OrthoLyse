@@ -45,7 +45,15 @@ class Enregistrement(BaseEnregistrement):
                 "svg": "./assets/SVG/cancel.svg",
                 "action":self.lunch_principal,
                 "label": "annuler",
-            },
+            }
+            ,
+            {
+                "svg": "./assets/SVG/pause_2.svg",
+                "action": self.pause,
+                "label": "pause",
+                "color": "red"
+            }
+            ,
             {
                 "svg": "./assets/SVG/stopMic.svg",
                 "action": self.stop_enregistrement,
@@ -106,16 +114,23 @@ class Enregistrement(BaseEnregistrement):
 
 
     def lunch_principal(self):
-        self.recController.stop_recording(sv=False)
+        self.recController.stop_recording(self.audioBar, sv=False)
         self.audioBar.stop_timer()
         self.controller.change_page("Prenregistrer")
 
     def stop_enregistrement(self):
         self.audioBar.stop_timer()
-        if self.recController.stop_recording() == True:
+        if self.recController.stop_recording(self.audioBar) == True:
             self.controller.set_file_transcription_path(self.recController.get_final_file_path())
             self.controller.change_page("StopEnregistrer")
         else:
             self.controller.change_page("Prenregistrer")
 
+    def pause(self):
+        if self.recController.get_etat_pause():
+            self.audioBar.set_pause_state(True)
+            self.recController.retour_pause(self.audioBar)
+        else:
+            self.audioBar.set_pause_state(False)
+            self.recController.pause(self.audioBar)
 

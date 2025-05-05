@@ -20,7 +20,7 @@ class Memo(QObject):
         self.frames = []
         self.audio = pyaudio.PyAudio()
         self.recording_event = threading.Event()  # Permet d'arrêter proprement
-
+        self.pause_event = threading.Event()
         # Récupère le micro par défaut
         device_info = sd.query_devices(kind="input")
         self.CHUNK = 1024
@@ -29,7 +29,7 @@ class Memo(QObject):
         self.device_index = device_info["index"]
         self.RATE = 44100
         self.WAVE_OUTPUT_FILENAME = output_fileName
-
+        self.is_pause = False #pour connaitre l'etat de l'enregistrement
         self.stream = None
         self.thread = None
 
@@ -63,6 +63,10 @@ class Memo(QObject):
         print("Démarrage du thread d'enregistrement...")
 
         while self.recording_event.is_set():
+            if self.pause_event.is_set():
+                #print("Pause active...")
+                continue
+
             try:
                 print("yep")
                 data = self.stream.read(self.CHUNK, exception_on_overflow=False)
@@ -71,13 +75,28 @@ class Memo(QObject):
                 # Calcul du volume à partir des échantillons
                 audio_data = np.frombuffer(data, dtype=np.int16)
                 volume_norm = np.linalg.norm(audio_data) / len(audio_data)
-                self.volume_level.emit(volume_norm)  # Envoie de l'amplitude du son
+                self.volume_level.emit(volume_norm)
 
             except Exception as e:
                 print(f"Erreur lors de l'enregistrement : {e}")
                 break
 
         print("Boucle _record terminée")
+
+    def pause_recording(self):
+        if not self.recording_event.is_set():
+            print("Aucun enregistrement actif pour mettre en pause.")
+            return
+        self.pause_event.set()
+        print("Enregistrement mis en pause.")
+
+    def resume_recording(self):
+        if not self.recording_event.is_set():
+            print("Aucun enregistrement actif pour reprendre.")
+            return
+        self.pause_event.clear()
+
+        print("Enregistrement repris.")
 
     def stop(self, save):
         """Arrête l'enregistrement et enregistre le fichier"""

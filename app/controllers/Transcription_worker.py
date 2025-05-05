@@ -7,10 +7,11 @@ class WorkerSignals(QObject):
 
 
 class TranscriptionRunnable(QRunnable):
-    def __init__(self, controller):
+    def __init__(self, controller,parent=None):
         super().__init__()
         self.controller = controller
         self.signals = WorkerSignals()
+        self.signals.setParent(parent)
 
     def run(self):
         # Change le curseur en mode de chargement sur le widget central
@@ -28,4 +29,6 @@ class TranscriptionRunnable(QRunnable):
         self.controller.set_first_mapping(result["mapping"])
         # Remet le curseur à son état normal une fois le traitement terminé
         #self.controller.central_widget.setCursor(Qt.ArrowCursor) !!! il ne faut pas manip qt dans un thread secondaire
+        print("transcription finished")
+
         self.signals.fin.emit()

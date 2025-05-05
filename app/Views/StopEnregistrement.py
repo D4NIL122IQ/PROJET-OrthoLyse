@@ -147,13 +147,14 @@ class StopEnregistrement(BaseEnregistrement):
         except TypeError:
             # Le signal n'était pas connecté
             pass
+        self.controller.central_widget.setCursor(Qt.WaitCursor)
 
         # Mémoriser le fichier actuel et indiquer qu'une transcription est en cours
         self.last_file_path = current_file
         self.transcription_in_progress = True
 
         # Créer le QRunnable pour exécuter la transcription dans un thread séparé
-        runnable = TranscriptionRunnable(self.controller)
+        runnable = TranscriptionRunnable(self.controller,self)
 
         # Fonction à appeler une fois la transcription terminée
         def on_transcription_finished():
@@ -161,6 +162,7 @@ class StopEnregistrement(BaseEnregistrement):
             self.controller.change_page("Transcription")
             self.controller.central_widget.setCursor(Qt.ArrowCursor)
             self.controller.enable_toolbar()
+
 
         # Connecter le signal "fin" à la fonction de fin
         runnable.signals.fin.connect(on_transcription_finished)
