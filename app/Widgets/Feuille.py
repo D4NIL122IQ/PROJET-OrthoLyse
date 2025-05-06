@@ -1,10 +1,54 @@
-import sys
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+     QWidget, QVBoxLayout, QHBoxLayout,
      QPushButton, QSizePolicy, QLabel, QPlainTextEdit
 )
-from PySide6.QtCore import Qt, QRunnable, QThreadPool, Slot, Signal, QObject
-from PySide6.QtGui import QFont, QColor, QPixmap, QTextCursor, QBrush
+from PySide6.QtCore import Qt
+from PySide6.QtGui import (QFont,  QPixmap, QBrush, QShortcut,
+                        QKeySequence, QTextCursor, QSyntaxHighlighter, QTextCharFormat, QColor)
+
+import re
+
+
+class EnonceHighlighter(QSyntaxHighlighter):
+    def __init__(self, document):
+        super().__init__(document)
+
+        self.format = QTextCharFormat()
+        self.format.setFontUnderline(True)
+        self.format.setUnderlineColor(QColor("green"))
+        self.format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+
+        self.highlighted_format = QTextCharFormat()
+        self.highlighted_format.setFontUnderline(True)
+        self.highlighted_format.setUnderlineColor(QColor("red"))
+        self.highlighted_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+
+        # Expression régulière pour capturer le texte entre +
+        self.pattern = re.compile(r'\+([^\+]+)\+')
+
+    def highlightBlock(self, text):
+        # Trouver tous les blocs +...+ dans le texte
+        matches = list(self.pattern.finditer(text))
+
+        for match in matches:
+            start, end = match.span(1)  # Extraire la position du texte pertinent (sans les +)
+
+            # Vérification si cette partie du texte est déjà surlignée
+            if self.is_already_highlighted(start, end):
+                # Change la couleur en rouge si déjà surlignée
+                self.setFormat(start, end - start, self.highlighted_format)
+            else:
+                # Applique le format de surlignement par défaut
+                self.setFormat(start, end - start, self.format)
+
+    def is_already_highlighted(self, start, end):
+        """Vérifie si la portion de texte est déjà surlignée (par exemple, couleur rouge)"""
+        cursor = self.document().findBlock(start)
+        while cursor:
+            if start >= cursor.position() and end <= cursor.position() + cursor.length():
+                return True
+            cursor = cursor.next()
+        return False
 
 
 class Feuille(QWidget):
@@ -21,7 +65,14 @@ class Feuille(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedSize((self.width() // 2), self.height() * 0.80)
 
-        self.font,self.font_family=self.controller.set_font('./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf')
+        self.enonce_history = [] # une liste pour avoi l'historique des ajout enonce pertinant
+        self.delete_shortcut = QShortcut(QKeySequence("Ctrl+Shift+D"), self)
+        self.delete_shortcut.activated.connect(self.undo_enonce)
+
+        self.add_shortcut = QShortcut(QKeySequence("Ctrl+Shift+A"), self)
+        self.add_shortcut.activated.connect(self.add_enonce_pertinant)
+
+        self.font,self.font_family=self.controller.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
         self.inner_widget()
 
     def inner_widget(self):
@@ -72,6 +123,7 @@ class Feuille(QWidget):
     def body(self):
         if self.controller.get_text_transcription() is not None:
             self.text_edit = QPlainTextEdit(self.controller.get_text_transcription())
+            self.highlighter = EnonceHighlighter(self.text_edit.document())
         else:
             self.text_edit = QPlainTextEdit("")
         self.old_text = self.text_edit.toPlainText()
@@ -100,7 +152,7 @@ class Feuille(QWidget):
     def bottom(self):
         self.right_boutton=self.boutton(self.widget,self.right_butto_text,"#15B5D4","#15B5D4","#FFFFFF")
         self.left_boutton=self.boutton( self.widget,self.left_button_text,"#FFFFFF","#15B5D4","#15B5D4")
-
+        self.bouton_enonce = self.boutton(self.widget, "Enonce pertinant", "#FFFFFF", "#15B5D4", "#15B5D4")
         if self.right_butto_text=="Coriger":
             self.right_boutton.clicked.connect(lambda :(self.controller.change_page("CTanscription"),self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         elif self.right_butto_text=="Annuler":
@@ -117,8 +169,11 @@ class Feuille(QWidget):
         if self.left_button_text == "Analyser":
             self.left_boutton.clicked.connect(lambda: self.lance_metrique())
 
+        self.bouton_enonce.clicked.connect(lambda: self.add_enonce_pertinant())
+
         label_layout = QHBoxLayout()
         label_layout.addStretch(1)
+        label_layout.addWidget(self.bouton_enonce)
         label_layout.addWidget(self.right_boutton)
         label_layout.addWidget(self.left_boutton)
 
@@ -145,7 +200,7 @@ class Feuille(QWidget):
         label.setStyleSheet(f"color: {color_text}; border: none;")
         label.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         label.setAlignment(Qt.AlignCenter)  # Centrage horizontal et vertical
-        self.font,self.font_family=self.controller.set_font("./assets/Fonts/Inter,Montserrat,Roboto/Inter/static/Inter_24pt-SemiBold.ttf")
+        self.font,self.font_family=self.controller.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
         self.font = QFont(self.font_family, 10)
 
         label.setFont(self.font)
@@ -201,6 +256,50 @@ class Feuille(QWidget):
         highlight_format = cursor.charFormat()
         highlight_format.setBackground(QBrush(QColor("yellow")))  # Surligner en jaune
         cursor.setCharFormat(highlight_format)
+
+
+    def add_enonce_pertinant(self):
+        cursor = self.text_edit.textCursor()
+        selected_text = cursor.selectedText()
+
+        if not selected_text:
+            return
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+        doc = self.text_edit.toPlainText()
+
+        # Vérifie qu’on n’est pas déjà juste à côté d’un +
+        if (start > 0 and doc[start - 1] == '+') or (end < len(doc) and doc[end] == '+'):
+            return
+
+        # Vérifie si le texte commence/termine déjà par +
+        if selected_text.startswith('+') and selected_text.endswith('+'):
+            # On enlève les + (et les sauve pour pouvoir undo)
+            new_text = selected_text[1:-1]
+            cursor.insertText(new_text)
+        else:
+            # On vérifie s’il y a déjà des ++ autour
+            if selected_text.startswith('+') or selected_text.endswith('+'):
+                return
+            # Sinon, on ajoute les +
+            self.enonce_history.append((start, selected_text))  # Pour undo
+            cursor.insertText(f'+{selected_text}+')
+
+        #print(self.controller.get_text_transcription())
+
+    def undo_enonce(self):
+        if not self.enonce_history:
+            return
+
+        start, original_text = self.enonce_history.pop()
+        cursor = self.text_edit.textCursor()
+        cursor.setPosition(start)
+        cursor.setPosition(start + len(original_text) + 2, QTextCursor.KeepAnchor)  # +2 pour les deux '+'
+        selected = cursor.selectedText()
+
+        if selected.startswith('+') and selected.endswith('+'):
+            cursor.insertText(original_text)
 
     def lance_metrique(self):
         self.controller.disable_toolbar()
