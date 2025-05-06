@@ -4,51 +4,53 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (QFont,  QPixmap, QBrush, QShortcut,
-                        QKeySequence, QTextCursor, QSyntaxHighlighter, QTextCharFormat, QColor)
+                           QKeySequence, QTextCursor, QSyntaxHighlighter, QTextCharFormat, QColor)
+
 
 import re
-
+import string
 
 class EnonceHighlighter(QSyntaxHighlighter):
-    def __init__(self, document):
-        super().__init__(document)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-        self.format = QTextCharFormat()
-        self.format.setFontUnderline(True)
-        self.format.setUnderlineColor(QColor("green"))
-        self.format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+        # Format vert : enoncé pertinent normal
+        self.green_format = QTextCharFormat()
+        self.green_format.setFontUnderline(True)
+        self.green_format.setUnderlineColor(QColor("green"))
+        self.green_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
 
-        self.highlighted_format = QTextCharFormat()
-        self.highlighted_format.setFontUnderline(True)
-        self.highlighted_format.setUnderlineColor(QColor("red"))
-        self.highlighted_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+        # Format rouge : enoncé pertinent chevauché
+        self.red_format = QTextCharFormat()
+        self.red_format.setFontUnderline(True)
+        self.red_format.setUnderlineColor(QColor("red"))
+        self.red_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
 
-        # Expression régulière pour capturer le texte entre +
+        # Motif pour capturer les +...+
         self.pattern = re.compile(r'\+([^\+]+)\+')
 
     def highlightBlock(self, text):
-        # Trouver tous les blocs +...+ dans le texte
+        # Créer une liste avec le nombre de fois où chaque caractère est surligné
+        coverage = [0] * (len(text) + 1)
+
         matches = list(self.pattern.finditer(text))
-
         for match in matches:
-            start, end = match.span(1)  # Extraire la position du texte pertinent (sans les +)
+            start = match.start(1)
+            end = match.end(1)
+            for i in range(start, end):
+                coverage[i] += 1
 
-            # Vérification si cette partie du texte est déjà surlignée
-            if self.is_already_highlighted(start, end):
-                # Change la couleur en rouge si déjà surlignée
-                self.setFormat(start, end - start, self.highlighted_format)
+        # Appliquer le bon format selon le nombre de surlignages
+        i = 0
+        while i < len(text):
+            if coverage[i] > 0:
+                start = i
+                fmt = self.red_format if coverage[i] > 1 else self.green_format
+                while i < len(text) and coverage[i] > 0:
+                    i += 1
+                self.setFormat(start, i - start, fmt)
             else:
-                # Applique le format de surlignement par défaut
-                self.setFormat(start, end - start, self.format)
-
-    def is_already_highlighted(self, start, end):
-        """Vérifie si la portion de texte est déjà surlignée (par exemple, couleur rouge)"""
-        cursor = self.document().findBlock(start)
-        while cursor:
-            if start >= cursor.position() and end <= cursor.position() + cursor.length():
-                return True
-            cursor = cursor.next()
-        return False
+                i += 1
 
 
 class Feuille(QWidget):
@@ -257,7 +259,6 @@ class Feuille(QWidget):
         highlight_format.setBackground(QBrush(QColor("yellow")))  # Surligner en jaune
         cursor.setCharFormat(highlight_format)
 
-
     def add_enonce_pertinant(self):
         cursor = self.text_edit.textCursor()
         selected_text = cursor.selectedText()
@@ -265,27 +266,34 @@ class Feuille(QWidget):
         if not selected_text:
             return
 
+        doc = self.text_edit.toPlainText()
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
-        doc = self.text_edit.toPlainText()
 
-        # Vérifie qu’on n’est pas déjà juste à côté d’un +
+        # Étendre vers l’arrière jusqu’à un séparateur
+        while start > 0 and doc[start - 1] not in string.whitespace + string.punctuation:
+            start -= 1
+
+        # Étendre vers l’avant jusqu’à un séparateur
+        while end < len(doc) and doc[end] not in string.whitespace + string.punctuation:
+            end += 1
+
+        full_selection = doc[start:end].strip()
+
+        # Ne pas ajouter si déjà encadré de +
         if (start > 0 and doc[start - 1] == '+') or (end < len(doc) and doc[end] == '+'):
             return
 
-        # Vérifie si le texte commence/termine déjà par +
-        if selected_text.startswith('+') and selected_text.endswith('+'):
-            # On enlève les + (et les sauve pour pouvoir undo)
-            new_text = selected_text[1:-1]
-            cursor.insertText(new_text)
-        else:
-            # On vérifie s’il y a déjà des ++ autour
-            if selected_text.startswith('+') or selected_text.endswith('+'):
-                return
-            # Sinon, on ajoute les +
-            self.enonce_history.append((start, selected_text))  # Pour undo
-            cursor.insertText(f'+{selected_text}+')
+        # Positionner le curseur et sélectionner le texte étendu
+        cursor.setPosition(start)
+        cursor.setPosition(end, QTextCursor.KeepAnchor)
+        selected_text = cursor.selectedText()
 
+        if selected_text.startswith('+') and selected_text.endswith('+'):
+            cursor.insertText(selected_text[1:-1])
+        elif not (selected_text.startswith('+') or selected_text.endswith('+')):
+            self.enonce_history.append((start, selected_text))
+            cursor.insertText(f'+{selected_text}+')
         #print(self.controller.get_text_transcription())
 
     def undo_enonce(self):
