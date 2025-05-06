@@ -301,10 +301,11 @@ class ImporterAudio(QWidget):
         self.transcription_in_progress = True
 
         # Créer le QRunnable pour exécuter la transcription dans un thread séparé
-        runnable = TranscriptionRunnable(self.controller)
+        runnable = TranscriptionRunnable(self.controller,self)
 
         # Fonction à appeler une fois la transcription terminée
         def on_transcription_finished():
+            print("temoin")
             self.transcription_in_progress = False
             self.controller.change_page("Transcription")
             self.left_boutton.setStyleSheet(f"""
