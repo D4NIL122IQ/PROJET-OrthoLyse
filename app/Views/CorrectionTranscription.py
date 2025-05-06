@@ -20,7 +20,7 @@ class CorrectionTranscription(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Contrôleur pour récupérer les données de transcription
-        from frontend.controllers.Menu_controllers import NavigationController
+        from app.controllers.Menu_controllers import NavigationController
         self.controller = NavigationController()
 
         self.ui(text,mapping_data,path)
