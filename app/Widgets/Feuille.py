@@ -270,30 +270,40 @@ class Feuille(QWidget):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
 
-        # Étendre vers l’arrière jusqu’à un séparateur
-        while start > 0 and doc[start - 1] not in string.whitespace + string.punctuation:
+        # Étendre la sélection au mot entier si elle est au milieu
+        while start > 0 and doc[start - 1].isalnum():
             start -= 1
-
-        # Étendre vers l’avant jusqu’à un séparateur
-        while end < len(doc) and doc[end] not in string.whitespace + string.punctuation:
+        while end < len(doc) and doc[end].isalnum():
             end += 1
 
-        full_selection = doc[start:end].strip()
-
-        # Ne pas ajouter si déjà encadré de +
-        if (start > 0 and doc[start - 1] == '+') or (end < len(doc) and doc[end] == '+'):
-            return
-
-        # Positionner le curseur et sélectionner le texte étendu
         cursor.setPosition(start)
         cursor.setPosition(end, QTextCursor.KeepAnchor)
         selected_text = cursor.selectedText()
 
+        # 1. Vérifie si on est collé à un '+'
+        if (start > 0 and doc[start - 1] == '+') or (end < len(doc) and doc[end] == '+'):
+            return
+
+        # 2. Si le texte commence et finit par '+', on enlève
         if selected_text.startswith('+') and selected_text.endswith('+'):
             cursor.insertText(selected_text[1:-1])
-        elif not (selected_text.startswith('+') or selected_text.endswith('+')):
-            self.enonce_history.append((start, selected_text))
-            cursor.insertText(f'+{selected_text}+')
+            return
+
+        # 3. Si un seul des deux + est là, on annule
+        if selected_text.startswith('+') or selected_text.endswith('+'):
+            return
+
+        # 4. Vérifie si la sélection est entièrement à l'intérieur d’un autre énoncé pertinent
+        for match in re.finditer(r'\+([^\+]+)\+', doc):
+            inner_start = match.start(1)
+            inner_end = match.end(1)
+            if start > inner_start and end < inner_end:
+                return  # interdit d’insérer totalement dans un existant
+
+        # 5. Sinon, on ajoute +...+ autour
+        self.enonce_history.append((start, selected_text))  # pour undo
+        cursor.insertText(f'+{selected_text}+')
+        self.group_enonce_pertinant()
         #print(self.controller.get_text_transcription())
 
     def undo_enonce(self):
@@ -308,6 +318,30 @@ class Feuille(QWidget):
 
         if selected.startswith('+') and selected.endswith('+'):
             cursor.insertText(original_text)
+
+    def group_enonce_pertinant(self):
+        # Trie par position
+        sorted_history = sorted(self.enonce_history, key=lambda x: x[0])
+
+        #on verifie que un bout de l'enonce a l'indice n n'est pas dans l'enonce l'indice n+1
+        if len(self.sorted_history) >= 2:
+            for i in range(len(self.sorted_history) - 1):
+                if self.sorted_history[i][1] in self.sorted_history[i+1][1] :
+                    pass
+
+        # Nettoie les + et récupère tous les mots
+        all_words = " ".join(entry[1].replace("+", "").strip() for entry in sorted_history).split()
+
+        # Supprime les doublons successifs
+        filtered_words = [all_words[0]]
+        for word in all_words[1:]:
+            if word != filtered_words[-1]:
+                filtered_words.append(word)
+
+        # Recompose la phrase
+        texte = " ".join(filtered_words)
+        print(texte)
+
 
     def lance_metrique(self):
         self.controller.disable_toolbar()

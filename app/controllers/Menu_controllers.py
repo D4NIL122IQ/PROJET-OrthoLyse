@@ -226,6 +226,12 @@ class NavigationController:
     def get_first_text_transcription(self):
         return self.first_text_transcription
 
+    def set_enonce_pertinant(self, enonce):
+        self.enonce_pertinant = enonce
+
+    def get_enonce_pertinant(self):
+        return self.enonce_pertinant
+
     def get_first_mapping(self):
         return self.first_mapping_data
 
