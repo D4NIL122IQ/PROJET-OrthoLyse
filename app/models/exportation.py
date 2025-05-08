@@ -56,7 +56,7 @@ from fpdf import FPDF
 from datetime import datetime
 import os
 
-def exporte_pdf(chemin, data, titre, font_dir='../frontend/assets/Fonts/Poppins'):
+def exporte_pdf(chemin, data, titre, font_dir='./assets/Fonts/Poppins'):
     """
     Exporte les données en format PDF avec :
     - un titre centré

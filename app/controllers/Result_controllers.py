@@ -5,7 +5,7 @@ from app.models.exportation import exporte_docx, exporte_pdf, exporte_json
 import json
 
 # Ouvrir le fichier settings en mode lecture
-with open("./settings.json", 'r', encoding='utf-8') as fichier:
+with open("./assets/JSON/settings.json", 'r', encoding='utf-8') as fichier:
     # Charger le contenu du fichier JSON
     parametres = json.load(fichier)
 
@@ -70,7 +70,7 @@ class ResultController:
         """Cette methode permet de renvoyer le nombre de morpheme dans chaque enonces"""
         resultat = self.get_morpheme()[0] // self.get_enonce()[0]
         pourcentage = int((resultat * 50) // (self.reultat_dic["morphemeEnonce"] * self.multiplicateur))
-        self.data["NombreMorphemeParEnonce"] = resultat
+        self.data["Nombre_Morpheme_ParEnonce"] = resultat
         return [resultat, pourcentage]
 
     def export_pdf(self):
