@@ -38,7 +38,8 @@ class Metrique(QWidget):
 
     def load_controller(self):
         print("2")
-        tx = self.navController.get_text_transcription()
+        # !! on fait l'analyse seulement sur les enonces pertinants si y'en a pas alors on fait l'analyse sur tout le texte
+        tx = self.navController.get_enonce_pertinant() if self.navController.get_enonce_pertinant() else self.navController.get_text_transcription()
         fp = self.navController.get_file_transcription_path()
         self.worker = ControllerLoaderWorker(text=tx, file_path=fp)
         self.worker.signals.finished.connect(self.on_controller_loaded)

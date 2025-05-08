@@ -171,6 +171,7 @@ class NavigationController:
 
     def set_text_transcription(self, text):
         self.text_transcription = text
+        self.enonce_pertinant = None # juste pour init la variable
 
     def set_mapping_data(self, data):
         self.mapping_data = data

@@ -324,10 +324,10 @@ class Feuille(QWidget):
         sorted_history = sorted(self.enonce_history, key=lambda x: x[0])
 
         #on verifie que un bout de l'enonce a l'indice n n'est pas dans l'enonce l'indice n+1
-        if len(self.sorted_history) >= 2:
-            for i in range(len(self.sorted_history) - 1):
-                if self.sorted_history[i][1] in self.sorted_history[i+1][1] :
-                    pass
+        if len(sorted_history) >= 2:
+            for i in range(len(sorted_history) - 1):
+                if sorted_history[i][1] in sorted_history[i+1][1] :
+                    sorted_history[i+1][1] = sorted_history[i+1][1].replace(sorted_history[i][1], "",1).strip()
 
         # Nettoie les + et récupère tous les mots
         all_words = " ".join(entry[1].replace("+", "").strip() for entry in sorted_history).split()
@@ -340,7 +340,7 @@ class Feuille(QWidget):
 
         # Recompose la phrase
         texte = " ".join(filtered_words)
-        print(texte)
+        self.controller.set_enonce_pertinant(texte)
 
 
     def lance_metrique(self):
