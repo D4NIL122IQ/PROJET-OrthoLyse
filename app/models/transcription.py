@@ -236,8 +236,9 @@ def transcription(file_path, ):
     # Vérifier si un GPU compatible est disponible
     if torch.cuda.is_available():
         dc = "cuda"
-    elif torch.backends.mps.is_available():
-        dc = "mps"
+    #cette condition n'est pas encore implementer sur macbook m4 a tester sur les ancienne version
+    #elif torch.backends.mps.is_available():
+    #    dc = "mps"
 
     # Charger le modèle Whisper demandé par l'utilisateur
     modele = whisper.load_model(modele_dispo[get_model()], device=dc)

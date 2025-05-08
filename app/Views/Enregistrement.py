@@ -15,14 +15,12 @@ class Enregistrement(BaseEnregistrement):
         super().__init__() # utilisation du constructeur du parent sans modification
         self.recController = RecordeController(self.audio_filename)
 
-
     def showEvent(self, event):
         """ Cet event permet de lancer l'enregistrement une fois la page charger"""
         super().showEvent(event)
         # connecter ici si pas déjà fait
         self.recController.start_recording(self.audioBar)
         self.audioBar.start_timer()
-
 
     def container(self):
         self.boutons =[]
