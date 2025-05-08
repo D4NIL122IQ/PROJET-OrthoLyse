@@ -57,13 +57,14 @@ class AudioBar(QWidget):
     def _update_timer(self):
         if not self.is_paused:
             self.seconds_elapsed += 1
+            heures = self.seconds_elapsed // 3600
             minutes = self.seconds_elapsed // 60
             seconds = self.seconds_elapsed % 60
-            self.timer_label.setText(f"{minutes:02}:{seconds:02}")
+            self.timer_label.setText(f"{heures:02}:{minutes:02}:{seconds:02}")
 
     def start_timer(self):
         self.seconds_elapsed = 0
-        self.timer_label.setText("00:00")
+        self.timer_label.setText("00:00:00")
         self.clock_timer.start(1000)
 
     def stop_timer(self):

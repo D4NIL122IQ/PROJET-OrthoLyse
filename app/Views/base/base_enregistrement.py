@@ -55,7 +55,7 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         )
         self.fontBold, font_family = self.controller.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
         self.text = QLabel("Enregistrement", self.bar)
-        self.text.setFont(self.fontBold)
+        self.text.setFont(QFont(self.font_family, 14))
         self.text.setStyleSheet(
             """
             background-color: transparent;
@@ -127,8 +127,7 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
 
     def set_text(self, text, color="#4c4c4c"):
         text = QLineEdit(text)
-        text.setFont(self.font)
-
+        text.setFont(QFont(self.font_family, 11))
         text.setStyleSheet("background: transparent; "
                            f"color: {color}; "
                            "border:none;")

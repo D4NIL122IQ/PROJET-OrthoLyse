@@ -30,7 +30,7 @@ class Enregistrement(BaseEnregistrement):
         self.box.setStyleSheet(
             """
             background-color: rgba(255, 255, 255, 204);
-            border-bottom-left-radius: 15x;
+            border-bottom-left-radius: 15px;
             border-bottom-right-radius: 15px;
             border-right: 2px solid #CECECE;
             border-bottom: 2px solid #CECECE;

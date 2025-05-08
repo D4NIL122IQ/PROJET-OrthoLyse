@@ -4,7 +4,7 @@ import json
 class SettingsController:
     def __init__(self):
         self.chemin_fichier = os.path.normpath(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "settings.json")
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "../assets/JSON", "settings.json")
         )
 
     def charger_parametres(self):
