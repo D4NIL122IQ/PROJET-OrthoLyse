@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import (
     QMainWindow,

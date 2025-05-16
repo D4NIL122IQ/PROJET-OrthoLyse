@@ -1,6 +1,10 @@
 # import nltk
 # nltk.download('punkt_tab') #il faut d'abord installer ca pour utiliser le reste
-
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 import nltk.tokenize as to  # type:ignore
 from num2words import num2words
 from nltk.stem.snowball import SnowballStemmer  # type:ignore
@@ -13,10 +17,10 @@ import json
 import os
 
 # Ouvrir le fichier JSON en mode lecture
-with open(os.path.abspath("./models/suffixe.json"), 'r', encoding='utf-8') as fichier:
+with open(os.path.abspath("./assets/JSON/suffixe.json"), 'r', encoding='utf-8') as fichier:
     # Charger le contenu du fichier JSON
     suffixes = json.load(fichier)
-with open(os.path.abspath("./models/prefixe.json"), 'r', encoding='utf-8') as fichier:
+with open(os.path.abspath("./assets/JSON/prefixe.json"), 'r', encoding='utf-8') as fichier:
     prefixes = json.load(fichier)
 
 
@@ -95,14 +99,6 @@ class Analyse_NLTK:
         # Nombre d'énoncés (phrases)
         print("ennoncer= ", sentences)
         return len(sentences)
-
-    def morphem_moy(self):
-        texts = self.__text.splitlines()
-        texts = [element.lstrip() for element in texts if re.match(r"[\S\w]", element.lstrip()) and len(
-            element.lstrip())]  # regex si la chaine commence avec autre que une lettre elle ne sera pas retenu \S verifie que ya pas de tabulation et \w verifie que c'est bien un caracter  !
-
-        for text in texts:
-            pass
 
     def mlcu(self):
         # mlcu=nbr word/nbr sents

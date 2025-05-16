@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : GUIDJOU Danil
+# Email   : danil.guidjou@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from abc import ABCMeta, abstractmethod
 from PySide6.QtGui import QIcon, QPixmap, QFont
 from PySide6.QtWidgets import (
@@ -135,7 +140,6 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         text.setFrame(False)
         text.setAlignment(Qt.AlignCenter)
         return text
-
     def set_label(self, text, color="#007299"):
         label = QLabel(text)
         label.setStyleSheet(f"color: {color};"
@@ -147,12 +151,12 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
 
     def resizeEvent(self, event):
         print(f"Nouvelle taille : {event.size().width()} x {event.size().height()}")
-        self.resizeHeaderLineContainer(event)
-        self.resize_icons(event)
-        self.resize_font_header(event)
-        self.resize_font_container(event)
+        self.adjustHeaderLineContainer(event)
+        self.adjust_icons(event)
+        self.adjust_font_header(event)
+        self.adjust_font_container(event)
 
-    def resizeHeaderLineContainer(self, event):
+    def adjustHeaderLineContainer(self, event):
         width = event.size().width()  # Largeur actuelle de la fenêtre
         height = event.size().height()  # Hauteur actuelle de la fenêtre
 
@@ -176,26 +180,25 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         self.zoneBlue.setFixedSize(zoneBlue_width, round(220 * 0.81))
 
         # Affichage des tailles réelles après redimensionnement
-        print(f"Réelles tailles après redimensionnement:")
-        print(f"Header - Taille réelle: {self.bar.size().width()}x{self.bar.size().height()}")
-        print(f"Line - Taille réelle: {self.line.size().width()}x{self.line.size().height()}")
-        print(f"Container - Taille réelle: {self.box.size().width()}x{self.box.size().height()}")
-        print(f"")
+        #print(f"Réelles tailles après redimensionnement:")
+        #print(f"Header - Taille réelle: {self.bar.size().width()}x{self.bar.size().height()}")
+       # print(f"Line - Taille réelle: {self.line.size().width()}x{self.line.size().height()}")
+        #print(f"Container - Taille réelle: {self.box.size().width()}x{self.box.size().height()}")
+        #print(f"")
 
-    def resize_icons(self, event=None):
+    def adjust_icons(self, event=None):
         min_size = 35
         max_size = 40
         new_size = int(self.parentWidget().width() * 0.05)
         print(new_size)
 
         new_size = max(min_size, min(new_size, max_size))
-        print(new_size)
         for btn in self.boutons:
             btn.setMinimumSize(new_size, new_size)
             btn.setMaximumSize(new_size, new_size)
             btn.setIconSize(QSize(new_size, new_size))
 
-    def resize_font_header(self, event=None):
+    def adjust_font_header(self, event=None):
         if not self.parentWidget():
             return  # Éviter une erreur si le parent n'existe pas encore
 
@@ -212,7 +215,7 @@ class BaseEnregistrement(QWidget, metaclass=WidgetABCMeta):
         font = QFont(self.text.font().family(), new_font_size)
         self.text.setFont(font)
 
-    def resize_font_container(self, event=None):
+    def adjust_font_container(self, event=None):
         if not self.parentWidget():
             return  # Éviter une erreur si le parent n'existe pas encore
 

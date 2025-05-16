@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtCore import QUrl, Qt, Signal, QTimer
 from PySide6.QtGui import QFontDatabase, QFont, QIcon
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer

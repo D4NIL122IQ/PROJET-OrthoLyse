@@ -1,3 +1,11 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
+
+
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QSizePolicy, QHBoxLayout
 
@@ -6,19 +14,38 @@ from app.Widgets.Feuille import Feuille
 
 
 class Transcription(QWidget):
-    def __init__(self,text,mapping_data,path=None):
+    def __init__(self, text, mapping_data, path=None):
+        """
+        Initialise le widget Transcription.
+
+        Args:
+            text (str): Texte de la transcription à afficher.
+            mapping_data (dict): Données de correspondance temps <-> texte pour le surlignage.
+            path (str, optional): Chemin du fichier audio à charger. Par défaut None.
+        """
         super().__init__()
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         from app.controllers.Menu_controllers import NavigationController
 
         self.controller = NavigationController()
-        self.ui(text,mapping_data,path)
+        self.ui(text, mapping_data, path)
 
-    def ui(self,text,mapping_data,path=None):
+    def ui(self, text, mapping_data, path=None):
+        """
+        Construit l'interface graphique du widget :
+        - charge le lecteur audio (réutilisable),
+        - connecte le signal de position audio,
+        - crée le widget Feuille (affichage du texte),
+        - assemble le tout dans un layout horizontal.
 
-        self.path =path
-        self.text=text
-        self.mapping_data=mapping_data
+        Args:
+            text (str): Texte à afficher dans la feuille de transcription.
+            mapping_data (dict): Dictionnaire de synchronisation entre l’audio et le texte.
+            path (str, optional): Chemin du fichier audio.
+        """
+        self.path = path
+        self.text = text
+        self.mapping_data = mapping_data
 
         self.layout = QHBoxLayout(self)
         self.layout.setAlignment(Qt.AlignCenter)
@@ -31,8 +58,14 @@ class Transcription(QWidget):
 
         self.audio_player.position_en_secondes.connect(self.on_position_changed)
 
-        self.feuille = Feuille("./assets/SVG/icone_file_text.svg", "Transcription", "Analyser", "Coriger",
-                               "rgba(255, 255, 255, 255)", self.text)
+        self.feuille = Feuille(
+            "./assets/SVG/icone_file_text.svg",
+            "Transcription",
+            "Analyser",
+            "corriger",
+            "rgba(255, 255, 255, 255)",
+            self.text
+        )
         self.feuille.setObjectName("feuille")
         # self.feuille.setStyleSheet('QWidget#feuille{background-color: white; border-radius: 20px;border: 1px solid black}')
         self.layout.addWidget(self.audio_player)

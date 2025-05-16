@@ -1,7 +1,17 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 import json
 import csv
-import sys
-
+from datetime import datetime
+import os
+from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.enum.table import WD_ALIGN_VERTICAL
 from fpdf import FPDF #type:ignore
 from docx import Document #type:ignore
 
@@ -52,11 +62,9 @@ def exporte_csv_row(chemin, data):
         rows = zip(*values) #l'etoile sert a decompacter les element cette a dire [[1,2,3],[a,b,c]] devient [1,2,3],[a,b,c]
         writer.writerows(rows)  # Écrit les lignes
 
-from fpdf import FPDF
-from datetime import datetime
-import os
 
-def exporte_pdf(chemin, data, titre, font_dir='./assets/Fonts/Poppins'):
+
+def exporte_pdf(chemin, data, titre, font_dir='../frontend/assets/Fonts/Poppins'):
     """
     Exporte les données en format PDF avec :
     - un titre centré
@@ -125,14 +133,7 @@ def exporte_pdf(chemin, data, titre, font_dir='./assets/Fonts/Poppins'):
     pdf.output(os.path.join(os.path.abspath(""), f"{titre}.pdf"))
 
 
-from docx import Document
-from docx.shared import Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from docx.enum.table import WD_ALIGN_VERTICAL
-from datetime import datetime
-import os
+
 
 def exporte_docx(chemin, data, titre, font_path='../frontend/assets/Fonts/Poppins-Regular.ttf'):
     doc = Document()
@@ -232,7 +233,7 @@ def exporte_docx(chemin, data, titre, font_path='../frontend/assets/Fonts/Poppin
 
     # Sauvegarde
 
-    doc.save(os.path.join(os.path.abspath(""), f"{titre}.docx"))
+    doc.save(os.path.join(os.path.abspath(chemin), f"{titre}.docx"))
 
 data={
     "nom": "Alice",

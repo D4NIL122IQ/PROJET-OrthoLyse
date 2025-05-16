@@ -1,5 +1,10 @@
+# =============================================================================
+# Auteur  : GUIDJOU Danil
+# Email   : danil.guidjou@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from app.models.Analyse_NLTK import Analyse_NLTK
-from app.models.operation_fichier import file_size_sec
+from app.models.operation_fichier_1 import file_size_sec
 from app.models.exportation import exporte_docx, exporte_pdf, exporte_json
 
 import json
@@ -70,16 +75,19 @@ class ResultController:
         """Cette methode permet de renvoyer le nombre de morpheme dans chaque enonces"""
         resultat = self.get_morpheme()[0] // self.get_enonce()[0]
         pourcentage = int((resultat * 50) // (self.reultat_dic["morphemeEnonce"] * self.multiplicateur))
-        self.data["Nombre_Morpheme_ParEnonce"] = resultat
+        self.data["NombreMorphemeParEnonce"] = resultat
         return [resultat, pourcentage]
 
     def export_pdf(self):
+        """Cette methode permet de l'eregistrement au format pdf"""
         exporte_pdf(f"./analyse{self.numeroAnalyse}.pdf", data = self.data, titre= f"Analyse n°{self.numeroAnalyse}")
 
     def export_json(self):
+        """Cette methode permet de l'eregistrement au format json"""
         exporte_json(f"./analyse{self.numeroAnalyse}.json", self.data)
 
     def export_docx(self):
+        """Cette methode permet de l'eregistrement au format docx"""
         exporte_docx(f"./analyse{self.numeroAnalyse}.docx", self.data, titre= f"Analyse n°{self.numeroAnalyse}")
 
 

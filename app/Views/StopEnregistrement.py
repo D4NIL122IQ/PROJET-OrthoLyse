@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : GUIDJOU Danil
+# Email   : danil.guidjou@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from typing import override
 
 from PySide6.QtCore import QTimer, Qt
@@ -16,6 +21,8 @@ from app.controllers.Transcription_worker import TranscriptionRunnable
 
 
 class StopEnregistrement(BaseEnregistrement):
+    """Classe fille de la classe base_enregistrement, permet d'afficher la page lors de l'arret de l'enregistrement """
+    
     def __init__(self):
         super().__init__()  # utilisation du constructeur du parent sans modification
 
@@ -27,6 +34,7 @@ class StopEnregistrement(BaseEnregistrement):
         self.audio_player.set_file_path(self.audio_filename)
         self.audio_player.reload_audio()    # la on recharge le player audio
         self.controller.set_audio_player(self.audio_player)
+        self.controller.enable_toolbar()
 
     def container(self):
         self.boutons =[]
@@ -84,7 +92,7 @@ class StopEnregistrement(BaseEnregistrement):
         self.zoneBlue.setFixedSize(320, round(220 * 0.81))
         self.zoneBlue.setStyleSheet(
             """
-            border: 2px dashed #017399;
+            border: 2px solid #017399;
             border-radius: 15px;
             background-color: rgba(255, 255, 255, 0.9);
         """

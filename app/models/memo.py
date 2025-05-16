@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : GUIDJOU Danil
+# Email   : danil.guidjou@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 import threading
 import pyaudio
 import wave
@@ -64,11 +69,9 @@ class Memo(QObject):
 
         while self.recording_event.is_set():
             if self.pause_event.is_set():
-                #print("Pause active...")
                 continue
 
             try:
-                print("yep")
                 data = self.stream.read(self.CHUNK, exception_on_overflow=False)
                 self.frames.append(data)
 
@@ -84,6 +87,8 @@ class Memo(QObject):
         print("Boucle _record terminée")
 
     def pause_recording(self):
+        """Cette methode arrete l'event d'enregistrement et demarre l'event pause"""
+
         if not self.recording_event.is_set():
             print("Aucun enregistrement actif pour mettre en pause.")
             return
@@ -91,6 +96,8 @@ class Memo(QObject):
         print("Enregistrement mis en pause.")
 
     def resume_recording(self):
+        """ Cette methode arrete l'event pause et redemarre l'event d'enregistrement """
+        
         if not self.recording_event.is_set():
             print("Aucun enregistrement actif pour reprendre.")
             return

@@ -1,9 +1,15 @@
+# =============================================================================
+# Auteur  : GUIDJOU Danil
+# Email   : danil.guidjou@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsOpacityEffect
 from PySide6.QtGui import QMovie, Qt
 from PySide6.QtCore import QTimer
 
 
 class LoaderWidget(QWidget):
+    """Affiche le loader """
     def __init__(self, parent=None):
         super().__init__(parent)
 

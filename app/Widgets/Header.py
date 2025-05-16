@@ -1,6 +1,18 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QSizePolicy
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
+
+from app.controllers.Menu_controllers import NavigationController
+
+
+from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QSizePolicy, QPushButton
+from PySide6.QtGui import QFontDatabase, QFont, QFontMetrics, QIcon, QPixmap
+from PySide6.QtCore import Qt, QSize
 
 from app.controllers.Menu_controllers import NavigationController
 
@@ -32,9 +44,18 @@ class Header(QWidget):
         self.label.setStyleSheet(f"color: black; font-family: {self.font_family};"
                                  f"font-size: larger")
 
+        # Création du bouton des paramètres
+        self.btn_settings = QPushButton("")
+        self.btn_settings.setIcon(QIcon(QPixmap("./assets/Logo/logo2.svg")))
+        self.btn_settings.setStyleSheet("border:0px;")
+        self.btn_settings.setIconSize(QSize(58, 52))
+        #self.btn_settings.setCursor(Qt.PointingHandCursor)
 
+        # Connecte le bouton aux paramètres
+        #self.btn_settings.clicked.connect(self.show_settings)
 
         # Ajoute les éléments au layout
+        self.layout.addWidget(self.btn_settings)
         self.layout.addStretch(1)
         self.layout.addWidget(self.label)
         self.setLayout(self.layout)
@@ -46,7 +67,7 @@ class Header(QWidget):
         """
         Change de page pour afficher les paramètres lorsque le bouton des paramètres est cliqué.
         """
-        self.controller.change_page("Parametres")
+        self.controller.change_page("Settings")
 
     def change_page(self):
         """
@@ -61,7 +82,28 @@ class Header(QWidget):
         Ajuste la taille de la police en fonction de la taille de la fenêtre.
         """
         self.adjustFontSize()
+        self.adjustBtnSettingsSize()
 
+    def adjustBtnSettingsSize(self):
+        """
+        Ajuste dynamiquement la taille du bouton des paramètres (btn_settings)
+        en respectant le ratio original de l'icône (294/244), avec des tailles min/max.
+        """
+        if not self.parentWidget():
+            return
+
+        ratio = 294 / 244
+        min_height, max_height = 58, 108
+
+
+        # Calcule la hauteur en fonction de la hauteur du parent
+        target_height = int(self.parentWidget().height() * 0.1)
+        target_height = max(min_height, min(target_height, max_height))
+        target_width = int(target_height * ratio)
+        print(target_width)
+        self.btn_settings.setFixedSize(target_width, target_height)
+        self.btn_settings.setIconSize(QSize(target_width, target_height))
+    #
     def adjustFontSize(self):
         """
         Ajuste la taille de la police du titre en fonction de la largeur de la fenêtre.

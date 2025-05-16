@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : BENHAMMA Dania
+# Email   : dania.benhamma@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QWidget, QPushButton
 from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtCore import Qt, QSize

@@ -1,3 +1,11 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis
+# Email   : anis.hammouche@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
+
+
+
 from PySide6 import QtCore
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QIcon
@@ -138,6 +146,16 @@ class ModeDeChargement(QWidget):
         text_label.setStyleSheet("color: #017399")
         return text_label
 
+
+
+    def resizeEvent(self, event):
+        """
+        Gère le redimensionnement de la fenêtre en ajustant les tailles des éléments selon l'événement de redimensionnement.
+        """
+        self.adjustFontSize_top_text(event)
+        self.adjustFontSize_middle_zone(event)
+        self.adjustFontSize_button(event)
+
     def adjustFontSize_button(self, event=None):
         """
         Ajuste la taille de la police du texte sur les boutons en fonction de la largeur de la fenêtre.
@@ -153,14 +171,6 @@ class ModeDeChargement(QWidget):
         font = QFont(self.left_text.font().family(), new_font_size)
         self.left_text.setFont(font)
         self.right_text.setFont(font)
-
-    def resizeEvent(self, event):
-        """
-        Gère le redimensionnement de la fenêtre en ajustant les tailles des éléments selon l'événement de redimensionnement.
-        """
-        self.adjustFontSize_top_text(event)
-        self.adjustFontSize_middle_zone(event)
-        self.adjustFontSize_button(event)
 
     def adjustFontSize_middle_zone(self, event=None):
         """

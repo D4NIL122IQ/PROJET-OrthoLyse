@@ -1,3 +1,8 @@
+# =============================================================================
+# Auteur  : BENHAMMA Dania
+# Email   : dania.benhamma@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QRadioButton, QLineEdit, \
     QPushButton, QGroupBox, QGridLayout, QSizePolicy, QMessageBox
 from PySide6.QtCore import Qt, QSize
