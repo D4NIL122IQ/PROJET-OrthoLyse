@@ -4,7 +4,10 @@
 /*/*/__pycache__
 /*/__pycache__
 /__pycache__
-
+/.eggs
+/build
+/dist
+/*.spec
 
 
 /*/*.mp4
