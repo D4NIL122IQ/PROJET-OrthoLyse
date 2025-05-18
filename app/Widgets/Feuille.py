@@ -1,59 +1,25 @@
+# =============================================================================
+# Auteur  : HAMMOUCHE Anis & GUIDJOU Danil 
+# Email   : anis.hammouche@etu.u-paris.fr & danil.guidjou@etu.u-paris.fr
+# Version : 1.0
+# =============================================================================
 from PySide6.QtWidgets import (
      QWidget, QVBoxLayout, QHBoxLayout,
-     QPushButton, QSizePolicy, QLabel, QPlainTextEdit
+     QPushButton, QSizePolicy, QLabel, QPlainTextEdit,
 )
 from PySide6.QtCore import Qt
-from PySide6.QtGui import (QFont,  QPixmap, QBrush, QShortcut,
+from PySide6.QtGui import (QFont,  QPixmap, QBrush, QShortcut, QAction, QKeyEvent,
                            QKeySequence, QTextCursor, QSyntaxHighlighter, QTextCharFormat, QColor)
 
-
 import re
-import string
 
-class EnonceHighlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        # Format vert : enoncé pertinent normal
-        self.green_format = QTextCharFormat()
-        self.green_format.setFontUnderline(True)
-        self.green_format.setUnderlineColor(QColor("green"))
-        self.green_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-
-        # Format rouge : enoncé pertinent chevauché
-        self.red_format = QTextCharFormat()
-        self.red_format.setFontUnderline(True)
-        self.red_format.setUnderlineColor(QColor("red"))
-        self.red_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-
-        # Motif pour capturer les +...+
-        self.pattern = re.compile(r'\+([^\+]+)\+')
-
-    def highlightBlock(self, text):
-        # Créer une liste avec le nombre de fois où chaque caractère est surligné
-        coverage = [0] * (len(text) + 1)
-
-        matches = list(self.pattern.finditer(text))
-        for match in matches:
-            start = match.start(1)
-            end = match.end(1)
-            for i in range(start, end):
-                coverage[i] += 1
-
-        # Appliquer le bon format selon le nombre de surlignages
-        i = 0
-        while i < len(text):
-            if coverage[i] > 0:
-                start = i
-                fmt = self.red_format if coverage[i] > 1 else self.green_format
-                while i < len(text) and coverage[i] > 0:
-                    i += 1
-                self.setFormat(start, i - start, fmt)
-            else:
-                i += 1
 
 
 class Feuille(QWidget):
+
+    #attribut de classe
+    enonce_history = []  # une liste pour avoi l'historique des ajout enonce pertinant
+
     def __init__(self,icone="./assets/SVG/icone_file_text.svg",text_top="Transcrire",left_button_text="Transcrire",right_butto_text="Coriger",bg_color="rgba(245, 245, 245, 0.85)",plain_text=""):
         super().__init__()
         self.icone=icone
@@ -67,7 +33,7 @@ class Feuille(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedSize((self.width() // 2), self.height() * 0.80)
 
-        self.enonce_history = [] # une liste pour avoi l'historique des ajout enonce pertinant
+
         self.delete_shortcut = QShortcut(QKeySequence("Ctrl+Shift+D"), self)
         self.delete_shortcut.activated.connect(self.undo_enonce)
 
@@ -76,6 +42,10 @@ class Feuille(QWidget):
 
         self.font,self.font_family=self.controller.set_font('./assets/Fonts/Poppins/Poppins-Bold.ttf')
         self.inner_widget()
+
+
+        self.text_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.text_edit.customContextMenuRequested.connect(self.afficher_menu_contextuel)
 
     def inner_widget(self):
         self.widget=QWidget(self)
@@ -124,10 +94,10 @@ class Feuille(QWidget):
 
     def body(self):
         if self.controller.get_text_transcription() is not None:
-            self.text_edit = QPlainTextEdit(self.controller.get_text_transcription())
-            self.highlighter = EnonceHighlighter(self.text_edit.document())
+            self.text_edit = _CustomPlainTextEdit(self.controller.get_text_transcription())
+            self.highlighter = _EnonceHighlighter(self.text_edit.document())
         else:
-            self.text_edit = QPlainTextEdit("")
+            self.text_edit = _CustomPlainTextEdit("")
         self.old_text = self.text_edit.toPlainText()
         self.text_edit.textChanged.connect(lambda: (self.controller.change_text(
             self.text_edit.toPlainText()),
@@ -154,9 +124,11 @@ class Feuille(QWidget):
     def bottom(self):
         self.right_boutton=self.boutton(self.widget,self.right_butto_text,"#15B5D4","#15B5D4","#FFFFFF")
         self.left_boutton=self.boutton( self.widget,self.left_button_text,"#FFFFFF","#15B5D4","#15B5D4")
-        self.bouton_enonce = self.boutton(self.widget, "Enonce pertinant", "#FFFFFF", "#15B5D4", "#15B5D4")
-        if self.right_butto_text=="Coriger":
-            self.right_boutton.clicked.connect(lambda :(self.controller.change_page("CTanscription"),self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
+        self.bouton_enonce = self.boutton(self.widget, " Tout effacer", "#FFFFFF", "#15B5D4", "#15B5D4")
+
+        if self.right_butto_text=="Corriger":
+            self.right_boutton.clicked.connect(lambda :(self.controller.change_page("CTanscription"),
+                                                        self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         elif self.right_butto_text=="Annuler":
 
             self.right_boutton.clicked.connect(lambda :(self.controller.set_text_transcription(self.old_text),
@@ -165,13 +137,18 @@ class Feuille(QWidget):
         if self.left_button_text=="Valider":
             self.controller.set_text_transcription(self.text_edit.toPlainText())
             self.left_boutton.clicked.connect(
-                lambda: (self.controller.set_text_transcription(self.text_edit.toPlainText()),
+                lambda: (
+                        self.controller.set_text_transcription(self.text_edit.toPlainText()),
                          self.controller.change_page("Transcription"),
                          self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing==False else None))
         if self.left_button_text == "Analyser":
             self.left_boutton.clicked.connect(lambda: self.lance_metrique())
 
-        self.bouton_enonce.clicked.connect(lambda: self.add_enonce_pertinant())
+        self.bouton_enonce.clicked.connect(lambda: self.delete_all_enonce_pertinant())
+
+        if len(self.enonce_history)==0 or  not self.text_edit.isReadOnly():
+            self.bouton_enonce.hide()
+
 
         label_layout = QHBoxLayout()
         label_layout.addStretch(1)
@@ -260,6 +237,11 @@ class Feuille(QWidget):
         cursor.setCharFormat(highlight_format)
 
     def add_enonce_pertinant(self):
+        """ajoute ou supprime un énoncé pertinent pour le texte sélectionné"""
+
+        if not self.text_edit.isReadOnly():
+            return  # Ne fait rien si le mode lecture seule est désactivé
+
         cursor = self.text_edit.textCursor()
         selected_text = cursor.selectedText()
 
@@ -270,7 +252,7 @@ class Feuille(QWidget):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
 
-        # Étendre la sélection au mot entier si elle est au milieu
+        # --- Sinon, on étend la sélection au mot entier si elle est au milieu d'un mot ---
         while start > 0 and doc[start - 1].isalnum():
             start -= 1
         while end < len(doc) and doc[end].isalnum():
@@ -280,37 +262,83 @@ class Feuille(QWidget):
         cursor.setPosition(end, QTextCursor.KeepAnchor)
         selected_text = cursor.selectedText()
 
-        # 1. Vérifie si on est collé à un '+'
-        if (start > 0 and doc[start - 1] == '+') or (end < len(doc) and doc[end] == '+'):
+        # Vérifie si la sélection est entourée par des '+'
+        if start > 0 and end < len(doc) and doc[start - 1] == '+' and doc[end] == '+':
+            # Sélectionne aussi les '+'
+            cursor.setPosition(start - 1)
+            cursor.setPosition(end + 1, QTextCursor.KeepAnchor)
+
+            # Supprime les '+' en remplaçant par le texte sans '+'
+            inner_text = cursor.selectedText()[1:-1]
+            cursor.insertText(inner_text)
+
+            # Supprime l'entrée correspondante dans enonce_history
+            to_remove = None
+            for i, (hist_start, hist_text) in enumerate(self.enonce_history):
+                # hist_start est la position sans +, donc devrait être start-1+1 = start (ou proche)
+                # On peut comparer le texte aussi
+                if hist_text == inner_text and abs(hist_start - (start - 1 + 1)) <= 2:
+                    to_remove = i
+                    break
+            if to_remove is not None:
+                Feuille.enonce_history.pop(to_remove)
+
+            Feuille.group_enonce_pertinant()
             return
 
-        # 2. Si le texte commence et finit par '+', on enlève
+        # Si le texte commence et finit par '+', on enlève
         if selected_text.startswith('+') and selected_text.endswith('+'):
             cursor.insertText(selected_text[1:-1])
+
+            # Supprimer l'entrée correspondante dans enonce_history
+            # On doit retrouver l'entrée qui correspond à ce texte (sans +)
+            text_sans_plus = selected_text[1:-1]
+            # Trouver la position de la sélection dans le doc (attention, doc a encore les +)
+            # On suppose que le start/end correspondent à la sélection avec les + dans doc
+            # Donc on cherche enence_history avec un texte égal à text_sans_plus ET une position proche
+            to_remove = None
+            for i, (hist_start, hist_text) in enumerate(self.enonce_history):
+                if hist_text == text_sans_plus and abs(hist_start - start) <= 2:
+                    to_remove = i
+                    break
+            if to_remove is not None:
+                Feuille.enonce_history.pop(to_remove)
+
+            self.group_enonce_pertinant()
             return
 
-        # 3. Si un seul des deux + est là, on annule
+        # Si un seul des deux + est là, on annule
         if selected_text.startswith('+') or selected_text.endswith('+'):
             return
 
-        # 4. Vérifie si la sélection est entièrement à l'intérieur d’un autre énoncé pertinent
+        # Vérifie si la sélection chevauche un énoncé pertinent existant
         for match in re.finditer(r'\+([^\+]+)\+', doc):
-            inner_start = match.start(1)
-            inner_end = match.end(1)
-            if start > inner_start and end < inner_end:
-                return  # interdit d’insérer totalement dans un existant
+            match_start = match.start()
+            match_end = match.end()
 
-        # 5. Sinon, on ajoute +...+ autour
-        self.enonce_history.append((start, selected_text))  # pour undo
+            # Empêche insertion si la sélection est :
+            # - entièrement à l’intérieur (déjà géré)
+            # - ou commence ou finit à l'intérieur
+            if (start > match_start and end < match_end) or \
+                    (start >= match_start and start < match_end) or \
+                    (end > match_start and end <= match_end):
+                return  # chevauchement interdit
+
+        # Sinon, on ajoute +...+ autour
+        Feuille.enonce_history.append((start, selected_text))  # pour undo
         cursor.insertText(f'+{selected_text}+')
-        self.group_enonce_pertinant()
-        #print(self.controller.get_text_transcription())
+
+        self.group_enonce_pertinant() # former un texte depuis les enonce pertinant
 
     def undo_enonce(self):
+        """Supprime le dernier enonce pertinant ajouter"""
+        if not self.text_edit.isReadOnly():
+            return  # Ne fait rien si le mode lecture seule est désactivé
+
         if not self.enonce_history:
             return
 
-        start, original_text = self.enonce_history.pop()
+        start, original_text = Feuille.enonce_history.pop()
         cursor = self.text_edit.textCursor()
         cursor.setPosition(start)
         cursor.setPosition(start + len(original_text) + 2, QTextCursor.KeepAnchor)  # +2 pour les deux '+'
@@ -318,30 +346,58 @@ class Feuille(QWidget):
 
         if selected.startswith('+') and selected.endswith('+'):
             cursor.insertText(original_text)
+        if len(Feuille.enonce_history)==0:
+            self.bouton_enonce.hide()
+
+        self.group_enonce_pertinant() #quand on sup un enonce on update le texte 
 
     def group_enonce_pertinant(self):
+        """Groupe tout les enonce pertinant et les met dans la variable enonce_pertinant dans le controller"""
         # Trie par position
-        sorted_history = sorted(self.enonce_history, key=lambda x: x[0])
+        sorted_history = sorted(Feuille.enonce_history, key=lambda x: x[0])
 
+        # **** Cette fonctionalite est utilise si dans une amelioration de l'app vous autoriser l'utilisateur a ajouter un enonce pertinant dont le debut/fin
+        #           est a l'interieur d'un autre enonce pertinant
         #on verifie que un bout de l'enonce a l'indice n n'est pas dans l'enonce l'indice n+1
-        if len(sorted_history) >= 2:
-            for i in range(len(sorted_history) - 1):
-                if sorted_history[i][1] in sorted_history[i+1][1] :
-                    sorted_history[i+1][1] = sorted_history[i+1][1].replace(sorted_history[i][1], "",1).strip()
+        #if len(sorted_history) >= 2:
+        #    for i in range(len(sorted_history) - 1):
+        #        if sorted_history[i][1] in sorted_history[i+1][1] :
+        #            sorted_history[i+1][1] = sorted_history[i+1][1].replace(sorted_history[i][1], "",1).strip()
 
-        # Nettoie les + et récupère tous les mots
-        all_words = " ".join(entry[1].replace("+", "").strip() for entry in sorted_history).split()
-
-        # Supprime les doublons successifs
-        filtered_words = [all_words[0]]
-        for word in all_words[1:]:
-            if word != filtered_words[-1]:
-                filtered_words.append(word)
-
-        # Recompose la phrase
-        texte = " ".join(filtered_words)
+        # Nettoie les + et récupère tous les mots (concat tout les enonce pertinant)
+        texte = " ".join(entry[1].replace("+", "").strip() for entry in sorted_history).split()
+        texte = " ".join(texte)
         self.controller.set_enonce_pertinant(texte)
+        if len(Feuille.enonce_history) != 0:
+            self.bouton_enonce.show()
 
+        print(texte)
+
+    def delete_all_enonce_pertinant(self):
+        """Supprime tout les enonces pertinant"""
+        if not self.text_edit.isReadOnly():
+            return  # Ne fait rien si le mode lecture seule est désactivé
+        while len(self.enonce_history) != 0:
+            self.undo_enonce()
+
+        self.bouton_enonce.hide()
+
+    def afficher_menu_contextuel(self, position):
+        """Affiche dans le menu clique droit la possibilite d'ajouter ou supprimer un enonce pertinant """
+        cursor = self.text_edit.textCursor()
+        has_selection = cursor.hasSelection()
+
+        # Menu standard
+        menu = self.text_edit.createStandardContextMenu()
+
+        if has_selection:
+            action_ajouter = QAction("Ajouter/supprimer enonce pertinent", self)
+            action_ajouter.triggered.connect(self.add_enonce_pertinant)
+            action_ajouter.setEnabled(self.text_edit.isReadOnly())
+            menu.addSeparator()
+            menu.addAction(action_ajouter)
+
+        menu.exec_(self.text_edit.mapToGlobal(position))
 
     def lance_metrique(self):
         self.controller.disable_toolbar()
@@ -357,6 +413,90 @@ class Feuille(QWidget):
         self.controller.change_page("Metrique")
 
 
+
+#classe utilise seulement dans ce fichier 
+class _EnonceHighlighter(QSyntaxHighlighter):
+    """Souligne en rouge le contenu entre +...+ et colore les + en rouge aussi."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Format pour le texte souligné en rouge
+        self.underline_format = QTextCharFormat()
+        self.underline_format.setFontUnderline(True)
+        self.underline_format.setUnderlineColor(QColor("red"))
+        self.underline_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+
+        # Format pour les caractères '+' en rouge
+        self.plus_format = QTextCharFormat()
+        self.plus_format.setForeground(QColor("red"))
+
+        # Regex pour trouver +...+
+        self.pattern = re.compile(r'\+([^\+]+)\+')
+
+    def highlightBlock(self, text):
+        for match in self.pattern.finditer(text):
+            full_start = match.start()      # position du premier +
+            content_start = match.start(1)  # début du texte sans +
+            content_end = match.end(1)      # fin du texte sans +
+            full_end = match.end()          # position après le second +
+
+            # Colorer les deux signes +
+            self.setFormat(full_start, 1, self.plus_format)  # premier +
+            self.setFormat(full_end - 1, 1, self.plus_format)  # deuxième +
+
+            # Souligner le contenu entre les +
+            self.setFormat(content_start, content_end - content_start, self.underline_format)
+
+
+
+#Classe prive utiliser seuelement dans ce fichier
+class _CustomPlainTextEdit(QPlainTextEdit):
+    def keyPressEvent(self, event: QKeyEvent):
+        cursor = self.textCursor()
+        key = event.key()
+        text = event.text()
+        doc = self.toPlainText()
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        # Si une sélection chevauche un énoncé pertinent, on bloque
+        if self._selection_chevauche_enonce(start, end, doc):
+            return
+
+        # Si pas de sélection, on empêche insertion/suppression dans un énoncé pertinent
+        if start == end:
+            if self._position_dans_enonce(start, doc):
+                return
+
+        # Empêcher l'insertion manuelle de '+'
+        if text == '+':
+            return
+
+        # Empêcher suppression d’un '+' avec Backspace ou Delete
+        if key in (Qt.Key_Backspace, Qt.Key_Delete):
+            pos = start - 1 if key == Qt.Key_Backspace else start
+            if 0 <= pos < len(doc) and doc[pos] == '+':
+                return
+            if self._position_dans_enonce(pos, doc):
+                return
+
+        super().keyPressEvent(event)
+
+    def _position_dans_enonce(self, pos, doc):
+        """Retourne True si la position est dans un texte entre +...+"""
+        for match in re.finditer(r'\+[^+]+\+', doc):
+            if match.start() < pos < match.end():
+                return True
+        return False
+
+    def _selection_chevauche_enonce(self, start, end, doc):
+        """Retourne True si une sélection chevauche un énoncé pertinent"""
+        for match in re.finditer(r'\+[^+]+\+', doc):
+            m_start, m_end = match.start(), match.end()
+            if (start < m_end and end > m_start):  # chevauchement
+                return True
+        return False
 
 
 text="""l'anis

@@ -62,7 +62,7 @@ class Transcription(QWidget):
             "./assets/SVG/icone_file_text.svg",
             "Transcription",
             "Analyser",
-            "corriger",
+            "Corriger",
             "rgba(255, 255, 255, 255)",
             self.text
         )

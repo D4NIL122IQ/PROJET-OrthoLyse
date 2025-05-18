@@ -128,6 +128,10 @@ class StopEnregistrement(BaseEnregistrement):
         """Cette methode permet de lancer la page prenregistrer
         mais d'abord elle libere le player audio, et supprime le nom de fichier mis dans le controllers
         ainsi que le fichier audio enregistrer"""
+
+        # arrete le lecteur
+        self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing == False else None
+
         self.controller.get_audio_player().liberer_fichier_audio()
         self.controller.set_file_transcription_path("")
 
@@ -137,6 +141,8 @@ class StopEnregistrement(BaseEnregistrement):
 
     def lunch_transcription(self):
         """"Cette methode lunce un thread qui s'occupe de faire la transcription et lance la page transcription"""
+        # arrete le lecteur
+        self.controller.get_audio_player().toggle_play_pause() if self.controller.get_audio_player().is_playing == False else None
         # Récupérer le chemin du fichier audio actuellement sélectionné
         current_file = self.controller.get_file_transcription_path()
 

@@ -4,8 +4,8 @@
 # Version : 1.0
 # =============================================================================
 from app.models.Analyse_NLTK import Analyse_NLTK
-from app.models.operation_fichier_1 import file_size_sec
-from app.models.exportation import exporte_docx, exporte_pdf, exporte_json
+from app.models.operation_fichier import file_size_sec
+from app.models.exportation import exporte_docx, exporte_pdf, exporte_json, exporte_csv_column, exporte_txt
 
 import json
 
@@ -78,16 +78,26 @@ class ResultController:
         self.data["NombreMorphemeParEnonce"] = resultat
         return [resultat, pourcentage]
 
-    def export_pdf(self):
+    def export_pdf(self, path):
         """Cette methode permet de l'eregistrement au format pdf"""
-        exporte_pdf(f"./analyse{self.numeroAnalyse}.pdf", data = self.data, titre= f"Analyse n°{self.numeroAnalyse}")
+        exporte_pdf(path, data = self.data, titre= f"Analyse n°{self.numeroAnalyse}")
 
-    def export_json(self):
+    def export_json(self, path):
         """Cette methode permet de l'eregistrement au format json"""
-        exporte_json(f"./analyse{self.numeroAnalyse}.json", self.data)
+        exporte_json(path, self.data)
 
-    def export_docx(self):
+    def export_docx(self, path):
         """Cette methode permet de l'eregistrement au format docx"""
-        exporte_docx(f"./analyse{self.numeroAnalyse}.docx", self.data, titre= f"Analyse n°{self.numeroAnalyse}")
+        exporte_docx(path, self.data, titre= f"Analyse n°{self.numeroAnalyse}")
+
+    def export_csv(self, path):
+        """Cette methode permet de l'eregistrement au format csv"""
+        exporte_csv_column(path, self.data)
+
+    def export_txt(self, path):
+        """Cette methode permet de l'eregistrement au format txt"""
+        exporte_txt(path, self.data)
+
+
 
 

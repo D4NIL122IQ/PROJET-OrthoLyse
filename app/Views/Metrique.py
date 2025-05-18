@@ -254,7 +254,8 @@ class Metrique(QWidget):
             "pdf": "Fichier PDF (*.pdf)",
             "docx": "Fichier Word (*.docx)",
             "json": "Fichier JSON (*.json)",
-            "csv": "Fichier CSV (*.csv)"
+            "csv": "Fichier CSV (*.csv)",
+            "txt": "Fichier TXT (*.txt)"
         }
 
         # Construire la chaîne de filtres avec l'extension par défaut en premier
@@ -275,9 +276,15 @@ class Metrique(QWidget):
 
 
         if filename.lower().endswith(".pdf"):
-            self.resultatController.export_pdf()
+            self.resultatController.export_pdf(filename)
         elif filename.lower().endswith(".docx"):
-            self.resultatController.export_docx()
+            self.resultatController.export_docx(filename)
+        elif filename.lower().endswith(".json"):
+            self.resultatController.export_json(filename)
+        elif filename.lower().endswith(".csv"):
+            self.resultatController.export_csv(filename)
+        elif filename.lower().endswith(".txt"):
+            self.resultatController.export_txt(filename)
 
     def show_menu(self):
         """affiche un menu lors du clique sur le bouton exporter """
@@ -288,18 +295,21 @@ class Metrique(QWidget):
         docx_action = QAction("DOCX", self)
         csv_action = QAction("CSV", self)
         json_action = QAction("JSON", self)
+        txt_action = QAction("TXT", self)
 
         # Connecter les actions à leurs fonctions (par exemple, pour l'export)
         pdf_action.triggered.connect(lambda : self.save("pdf"))
         docx_action.triggered.connect(lambda : self.save("docx"))
         csv_action.triggered.connect(lambda : self.save("csv"))
         json_action.triggered.connect(lambda : self.save("json"))
+        txt_action.triggered.connect(lambda : self.save("txt"))
 
             # Ajouter les actions au menu
         menu.addAction(pdf_action)
         menu.addAction(docx_action)
         menu.addAction(csv_action)
         menu.addAction(json_action)
+        menu.addAction(txt_action)
         # Afficher le menu sous le bouton
         menu.exec(self.btn.mapToGlobal(self.btn.rect().bottomLeft()))
 

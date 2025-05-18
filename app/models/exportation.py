@@ -64,7 +64,7 @@ def exporte_csv_row(chemin, data):
 
 
 
-def exporte_pdf(chemin, data, titre, font_dir='../frontend/assets/Fonts/Poppins'):
+def exporte_pdf(chemin, data, titre, font_dir='../app/assets/Fonts/Poppins'):
     """
     Exporte les données en format PDF avec :
     - un titre centré
@@ -130,12 +130,12 @@ def exporte_pdf(chemin, data, titre, font_dir='../frontend/assets/Fonts/Poppins'
 
 
     # Sauvegarde
-    pdf.output(os.path.join(os.path.abspath(""), f"{titre}.pdf"))
+    pdf.output(chemin)
 
 
 
 
-def exporte_docx(chemin, data, titre, font_path='../frontend/assets/Fonts/Poppins-Regular.ttf'):
+def exporte_docx(chemin, data, titre, font_path='../app/assets/Fonts/Poppins-Regular.ttf'):
     doc = Document()
 
     # Style global
@@ -233,7 +233,7 @@ def exporte_docx(chemin, data, titre, font_path='../frontend/assets/Fonts/Poppin
 
     # Sauvegarde
 
-    doc.save(os.path.join(os.path.abspath(chemin), f"{titre}.docx"))
+    doc.save(chemin)
 
 data={
     "nom": "Alice",
