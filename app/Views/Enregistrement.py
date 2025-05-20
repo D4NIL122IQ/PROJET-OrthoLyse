@@ -120,6 +120,7 @@ class Enregistrement(BaseEnregistrement):
 
     def lunch_principal(self):
         self.recController.stop_recording(self.audioBar, sv=False)
+        self.controller.enable_toolbar()
         self.audioBar.stop_timer()
         self.controller.change_page("Prenregistrer")
 

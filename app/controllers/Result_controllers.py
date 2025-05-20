@@ -21,6 +21,8 @@ class ResultController:
     le pourcentage est calculer comme suit : (nbr_resultat * 50) / (ratio * multiplicateur)
     ===> multiplicateur = ratio * ( duree_audio / duree_ratio if(duree_audio >  duree_ratio) :  duree_ratio / duree_audio )
     """
+
+
     def __init__(self, transcrip="", file_path=""):
         self.resultat = Analyse_NLTK(text=transcrip)
 
@@ -34,6 +36,10 @@ class ResultController:
 
         self.data ={}
         self.data["texte"] = transcrip
+
+        with open("./assets/JSON/settings.json", "w") as f:
+            parametres["numero"] += 1
+            json.dump(parametres, f, indent=4)
 
     def get_lemme(self):
         """Cette methode permet de renvoyer le nombre de lemme"""

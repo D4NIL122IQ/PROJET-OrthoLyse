@@ -10,6 +10,9 @@ from num2words import num2words
 from nltk.stem.snowball import SnowballStemmer  # type:ignore
 import spacy
 
+import fr_core_news_lg
+print(fr_core_news_lg.__file__)
+
 # Charger un modèle pré-entraîné en français
 
 import re
