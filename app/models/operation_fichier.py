@@ -5,24 +5,17 @@
 # =============================================================================
 import os
 import sys
+import subprocess
+import json
 from pathlib import Path
 
 from pydub import AudioSegment
 from pydub.silence import detect_silence
 
-def find_ffmpeg():
-    if getattr(sys, 'frozen', False):
-        # En mode bundle PyInstaller
-        base_path = sys._MEIPASS
-        ffmpeg_path = os.path.abspath(os.path.join(base_path, '_internal' ,'ffmpeg'))
-        print(f"🛠️ Chemin ffmpeg (bundle) : {ffmpeg_path}")  # Debug du chemin
-    else:
-        # En mode dev
-        ffmpeg_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin', 'ffmpeg'))
-        print(f"🛠️ Chemin ffmpeg (dev) : {ffmpeg_path}")  # Debug du chemin
-    return ffmpeg_path
-
-AudioSegment.converter = find_ffmpeg()
+if hasattr(sys, '_MEIPASS'):
+    AudioSegment.converter = os.path.join(sys._MEIPASS, "ffmpeg_bin/ffmpeg")
+    AudioSegment.ffmpeg = os.path.join(sys._MEIPASS, "ffmpeg_bin/ffmpeg")
+    AudioSegment.ffprobe = os.path.join(sys._MEIPASS, "ffprbe_bin/ffprobe")
 
 def file_size_Mo(file_path):
     """Retourne la taille du fichier en Mo"""
@@ -42,12 +35,47 @@ def file_size_ms(file_path):
     frmt = reel_file_format(file_path)
     return len(AudioSegment.from_file(file_path , format=frmt))
 
+def _file_size_ms(file_path):
+    """Retourne la durée de l'audio en millisecondes (via ffprobe)"""
+    ffprobe_path = os.path.join(sys._MEIPASS, "ffprobe_bin/ffprobe")
+    result = subprocess.run([
+        ffprobe_path,
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_format",
+        file_path
+    ], capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(f"ffprobe failed: {result.stderr.strip()}")
+
+    info = json.loads(result.stdout)
+    duration_seconds = float(info['format']['duration'])
+    return int(duration_seconds * 1000)  # conversion en millisecondes
+
 def file_size_sec(file_path):
     """Retourne la duree de l'audio en seconde"""
     #on charge l'audio dans AudioSegment ...
     #puis on obtient la durée en ms -> / 1000 pour l'obtenir en sec
-    frmt = reel_file_format(file_path)
+    frmt = reel_file_format(file_path) 
     return ( len(AudioSegment.from_file(file_path , format=frmt)) / 1000)
+
+def _file_size_sec(file_path):
+    """Retourne la durée de l'audio en secondes (via ffprobe)"""
+    ffprobe_path = os.path.join(sys._MEIPASS, "ffprobe_bin/ffprobe")
+    result = subprocess.run([
+        ffprobe_path,
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_format",
+        file_path
+    ], capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(f"ffprobe failed: {result.stderr.strip()}")
+
+    info = json.loads(result.stdout)
+    return float(info['format']['duration'])  # en secondes
 
 def extract_audio_fmp4(file_pth):
     """"

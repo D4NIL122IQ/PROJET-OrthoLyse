@@ -10,9 +10,6 @@ from app.models.exportation import exporte_docx, exporte_pdf, exporte_json, expo
 import json
 
 # Ouvrir le fichier settings en mode lecture
-with open("./assets/JSON/settings.json", 'r', encoding='utf-8') as fichier:
-    # Charger le contenu du fichier JSON
-    parametres = json.load(fichier)
 
 class ResultController:
     """
@@ -21,9 +18,7 @@ class ResultController:
     le pourcentage est calculer comme suit : (nbr_resultat * 50) / (ratio * multiplicateur)
     ===> multiplicateur = ratio * ( duree_audio / duree_ratio if(duree_audio >  duree_ratio) :  duree_ratio / duree_audio )
     """
-
-
-    def __init__(self, transcrip="", file_path=""):
+    def __init__(self, parametres, transcrip="", file_path=""):
         self.resultat = Analyse_NLTK(text=transcrip)
 
         self.reultat_dic = parametres["ratio_metrique"]

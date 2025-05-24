@@ -12,7 +12,7 @@ class WorkerSignals(QObject):
     finished = Signal(object)         # Emis quand le contrôleur est prêt
     error = Signal(str)              # Emis en cas d'erreur
     progress = Signal(str)           # Pour envoyer des infos pendant le chargement
-
+import json
 class ControllerLoaderWorker(QRunnable):
     """Cete classe permet de lancer un thread secondaire dans un QRunnable pour lancer l'analyse
     parametres : text : le texte sur lequelle on fait l'analyse /// file_path : le fichier audio de la transcription
@@ -27,7 +27,12 @@ class ControllerLoaderWorker(QRunnable):
     @Slot()
     def run(self):
         try:
-            controller = ResultController(     #init du controller d'analyse 
+            with open("./assets/JSON/settings.json", 'r', encoding='utf-8') as fichier:
+                # Charger le contenu du fichier JSON
+                parametres = json.load(fichier)
+
+            controller = ResultController(     #init du controller d'analyse
+                parametres,
                 transcrip=self.txt,
                 file_path=self.file_path
             )
