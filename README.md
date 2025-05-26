@@ -54,6 +54,12 @@ Lancement de l'app
 ```bash
 python3 frontend/main.app
 ```
- 
+
+## Amélioration possible 
+
+pour la partie transcription : utilisation de faster-Whisper qui est une réimplémentation de whisper qui consomme moins de mémoire et qui est jusqu'à 4 fois plus rapide 
+
+pour la partie analyse : entraîner le modèle spacy pour avoir une meilleure précision dans l'analyse
+
 @assinscreedFC & @D4NIL122IQ
 © Projet L2 université paris cité 
